@@ -2,28 +2,30 @@ package nz.co.lazycoder.personalbacklog;
 
 import android.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import java.io.File;
+import java.io.IOException;
 
 import nz.co.lazycoder.personalbacklog.addItemDialog.AddItemDialog;
-import nz.co.lazycoder.personalbacklog.model.BacklogAdapter;
+import nz.co.lazycoder.personalbacklog.model.BacklogListAdapter;
+import nz.co.lazycoder.personalbacklog.model.DataModelController;
+import nz.co.lazycoder.personalbacklog.model.InProgressListAdapter;
+import nz.co.lazycoder.personalbacklog.model.ListItem;
 
 public class BacklogFragment extends Fragment {
 
-    private ListView inProgressView;
-    private BacklogAdapter inProgressAdapter;
-    private ListView backlogView;
-    private BacklogAdapter backlogAdapter;
+    private static final String TAG = BacklogFragment.class.getSimpleName();
 
-    public BacklogFragment() {
-        populateSampleData();
-    }
+    private final DataModelController dataModelController = new DataModelController();
+
+    private ListView inProgressView;
+    private ListView backlogView;
 
     @Override
     public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -32,24 +34,9 @@ public class BacklogFragment extends Fragment {
         View fragmentView = inflater.inflate(R.layout.fragment_personal_backlog, container, false);
 
         backlogView = (ListView) fragmentView.findViewById(R.id.backlog_list_view);
-
-        backlogView.setAdapter(backlogAdapter);
-        backlogView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                inProgressAdapter.addItem(backlogAdapter.removeItem(position));
-            }
-        });
-
-
         inProgressView = (ListView) fragmentView.findViewById(R.id.in_progress_list_view);
-        inProgressView.setAdapter(inProgressAdapter);
-        inProgressView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                backlogAdapter.addItem(inProgressAdapter.removeItem(position));
-            }
-        });
+
+        setupModelsAndListeners();
 
 
         View addItemButton = fragmentView.findViewById(R.id.add_row);
@@ -58,18 +45,25 @@ public class BacklogFragment extends Fragment {
         return fragmentView;
     }
 
-    private void populateSampleData() {
-        final int numItems = 20;
-        ArrayList<BacklogItem> backlogItemArrayList = new ArrayList<BacklogItem>(numItems);
-        for (int i = 0; i < numItems; i++) {
-            backlogItemArrayList.add(new BacklogItem("Sample item " + i));
-        }
+    private void setupModelsAndListeners() {
+        backlogView.setAdapter(new BacklogListAdapter(dataModelController));
+        backlogView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                dataModelController.moveItemFromBacklogToInProgress(position);
+            }
+        });
 
-        backlogAdapter = new BacklogAdapter(backlogItemArrayList);
 
-        inProgressAdapter = new BacklogAdapter(Collections.<BacklogItem>emptyList());
-
+        inProgressView.setAdapter(new InProgressListAdapter(dataModelController));
+        inProgressView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                dataModelController.removeItemFromInProgress(position);
+            }
+        });
     }
+
 
     private class AddItemOnClickListener implements View.OnClickListener {
         @Override
@@ -78,12 +72,40 @@ public class BacklogFragment extends Fragment {
                     getActivity(),
                     new AddItemDialog.OnItemCreatedListener() {
                         @Override
-                        public void onItemCreated(BacklogItem item) {
-                            backlogAdapter.addItem(item);
+                        public void onItemCreated(ListItem item) {
+                            dataModelController.addItemToBacklog(item);
                         }
                     });
             addItemDialog.show();
         }
 
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // TODO: move this
+        File saveFile = new File(getActivity().getExternalCacheDir(), "pbl.json");
+        try {
+            dataModelController.toDisk(saveFile);
+        } catch (IOException ex) {
+            Log.v(TAG, "Could not save to disk", ex);
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // TODO: move this
+        File saveFile = new File(getActivity().getExternalCacheDir(), "pbl.json");
+        try {
+            dataModelController.fromDisk(saveFile);
+        } catch (IOException ex) {
+            Log.v(TAG, "Could not load from disk", ex);
+        }
+
+        setupModelsAndListeners();
     }
 }

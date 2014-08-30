@@ -12,4 +12,6 @@ public class PersonalBacklogActivity extends Activity  {
         setContentView(R.layout.activity_personal_backlog);
 
     }
+
+
 }

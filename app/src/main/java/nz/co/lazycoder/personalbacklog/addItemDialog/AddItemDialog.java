@@ -9,8 +9,8 @@ import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
-import nz.co.lazycoder.personalbacklog.BacklogItem;
 import nz.co.lazycoder.personalbacklog.R;
+import nz.co.lazycoder.personalbacklog.model.ListItem;
 
 /**
  * Created by ktchernov on 17/08/2014.
@@ -19,7 +19,7 @@ public class AddItemDialog {
     private final AlertDialog alertDialog;
 
     public interface OnItemCreatedListener {
-        public void onItemCreated(BacklogItem item);
+        public void onItemCreated(ListItem item);
     }
 
     public AddItemDialog(Context context, OnItemCreatedListener onItemCreatedListener) {
@@ -52,7 +52,7 @@ public class AddItemDialog {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             String title = titleInputView.getText().toString();
-                            onItemCreatedListener.onItemCreated(new BacklogItem(title));
+                            onItemCreatedListener.onItemCreated(new ListItem(title));
                         }
                     });
 

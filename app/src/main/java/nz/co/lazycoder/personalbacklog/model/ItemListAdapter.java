@@ -6,40 +6,36 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-import java.util.LinkedList;
-import java.util.List;
-
-import nz.co.lazycoder.personalbacklog.BacklogItem;
 import nz.co.lazycoder.personalbacklog.R;
 
 /**
  * Created by ktchernov on 16/08/2014.
  */
-public class BacklogAdapter extends BaseAdapter
+class ItemListAdapter extends BaseAdapter
 {
-    private List<BacklogItem> items;
+    private ListItems items;
 
-    public BacklogAdapter(List<BacklogItem> items) {
-        this.items = new LinkedList<BacklogItem>(items);
+    ItemListAdapter(ListItems items) {
+        this.items = items;
     }
 
     @Override
     public int getCount() {
-        return items.size();
+        return items.getCount();
     }
 
     @Override
-    public Object getItem(int i) {
-        return items.get(i);
+    public Object getItem(int position) {
+        return items.getItem(position);
     }
 
     @Override
-    public long getItemId(int i) {
-        return i;
+    public long getItemId(int position) {
+        return position;
     }
 
     @Override
-    public View getView(int index, View recycleView, ViewGroup parent) {
+    public View getView(int position, View recycleView, ViewGroup parent) {
         final ViewHolder viewHolder;
         if (recycleView == null) {
             recycleView = LayoutInflater.from(parent.getContext()).inflate(R.layout.backlog_item, parent, false);
@@ -49,21 +45,10 @@ public class BacklogAdapter extends BaseAdapter
         else {
             viewHolder = (ViewHolder) recycleView.getTag();
         }
-        BacklogItem backlogItem = items.get(index);
-        viewHolder.textView.setText(backlogItem.getTitle());
+        ListItem listItem = items.getItem(position);
+        viewHolder.textView.setText(listItem.getTitle());
 
         return recycleView;
-    }
-
-    public BacklogItem removeItem(int position) {
-        BacklogItem removedItem = items.remove(position);
-        notifyDataSetChanged();
-        return removedItem;
-    }
-
-    public void addItem(BacklogItem backlogItem) {
-        items.add(0, backlogItem);
-        notifyDataSetChanged();
     }
 
     class ViewHolder {
