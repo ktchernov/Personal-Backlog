@@ -2,9 +2,15 @@ package nz.co.lazycoder.personalbacklog.model;
 
 import android.test.InstrumentationTestCase;
 
-import org.mockito.Mockito;
+import nz.co.lazycoder.personalbacklog.io.SaveQueuer;
 
-import java.io.File;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by ktchernov on 24/08/2014.
@@ -12,26 +18,19 @@ import java.io.File;
 public class DataModelControllerTest extends InstrumentationTestCase {
     private DataModelController dataModelController;
 
+    private SaveQueuer saveQueuer;
     private DataModelController.ListListener backlogListener;
     private DataModelController.ListListener inProgressListener;
 
-    private File testFile;
-
     public void setUp() {
-        dataModelController = new DataModelController();
+        saveQueuer = mock(SaveQueuer.class);
+        dataModelController = new DataModelController(saveQueuer);
 
-        backlogListener = Mockito.mock(DataModelController.ListListener.class);
-        inProgressListener = Mockito.mock(DataModelController.ListListener.class);
+        backlogListener = mock(DataModelController.ListListener.class);
+        inProgressListener = mock(DataModelController.ListListener.class);
 
         dataModelController.setBacklogListener(backlogListener);
         dataModelController.setInProgressListener(inProgressListener);
-    }
-
-    public void tearDown() {
-        if (testFile != null) {
-            testFile.delete();
-            testFile = null;
-        }
     }
 
     public void testDataModelShouldInitializeEmpty() {
@@ -39,37 +38,37 @@ public class DataModelControllerTest extends InstrumentationTestCase {
         assertNoInProgressItems();
     }
 
-    private void setupSomeTestData() {
-        final ListItem testItem1 = new ListItem("test1");
-        final ListItem testItem2 = new ListItem("test2");
-        dataModelController.addItemToBacklog(testItem1);
-        dataModelController.addItemToBacklog(testItem2);
-        dataModelController.moveItemFromBacklogToInProgress(1);
-    }
-
     private void assertNoBacklogItems() {
         assertEquals(0, dataModelController.getBacklogItemList().getCount());
     }
 
     private void assertNoBacklogListenerNotification() {
-        Mockito.verify(backlogListener, Mockito.never()).onListChanged();
+        verify(backlogListener, never()).onListChanged();
     }
 
     private void assertBacklogListenerNotifications(int numTimes) {
-        Mockito.verify(backlogListener, Mockito.times(numTimes)).onListChanged();
+        verify(backlogListener, times(numTimes)).onListChanged();
     }
 
     private void assertInProgressListenerNotifications(int numTimes) {
-        Mockito.verify(inProgressListener, Mockito.times(numTimes)).onListChanged();
+        verify(inProgressListener, times(numTimes)).onListChanged();
     }
 
     private void assertNoInProgressListenerNotification() {
-        Mockito.verify(inProgressListener, Mockito.never()).onListChanged();
+        verify(inProgressListener, never()).onListChanged();
     }
 
 
     private void assertNoInProgressItems() {
         assertEquals(0, dataModelController.getInProgressItemList().getCount());
+    }
+
+    private void verifyAtLeastOneSaveQueued() {
+        verify(saveQueuer, atLeast(1)).queueSave(anyString(), any(SaveQueuer.SaveListener.class));
+    }
+
+    private void verifyNoOneSavesQueued() {
+        verify(saveQueuer, never()).queueSave(anyString(), any(SaveQueuer.SaveListener.class));
     }
 
     public void testDataModelAddItem() {
@@ -82,6 +81,8 @@ public class DataModelControllerTest extends InstrumentationTestCase {
         assertBacklogListenerNotifications(1);
         assertNoInProgressListenerNotification();
         assertNoInProgressItems();
+
+        verifyAtLeastOneSaveQueued();
     }
 
     public void testDataModelRemoveBacklogItem() {
@@ -96,6 +97,8 @@ public class DataModelControllerTest extends InstrumentationTestCase {
 
         assertNoBacklogItems();
         assertNoInProgressItems();
+
+        verifyAtLeastOneSaveQueued();
     }
 
     public void testDataModelMoveValidItemFromBacklogToInProgress() {
@@ -112,6 +115,8 @@ public class DataModelControllerTest extends InstrumentationTestCase {
         assertSame(testItem, dataModelController.getInProgressItemList().getItem(0));
 
         assertNoBacklogItems();
+
+        verifyAtLeastOneSaveQueued();
     }
 
     public void testDataModelMoveInvalidItemFromBacklogToInProgressShouldFail() {
@@ -126,6 +131,8 @@ public class DataModelControllerTest extends InstrumentationTestCase {
 
         assertNoBacklogListenerNotification();
         assertNoInProgressListenerNotification();
+
+        verifyNoOneSavesQueued();
     }
 
     public void testDataModelMoveInvalidItemFromInProgressToBacklogShouldFail() {
@@ -140,5 +147,7 @@ public class DataModelControllerTest extends InstrumentationTestCase {
 
         assertNoBacklogListenerNotification();
         assertNoInProgressListenerNotification();
+
+        verifyNoOneSavesQueued();
     }
 }

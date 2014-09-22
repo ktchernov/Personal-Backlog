@@ -3,8 +3,9 @@ package nz.co.lazycoder.personalbacklog.model;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
+
+import nz.co.lazycoder.personalbacklog.io.SaveQueuer;
 
 /**
  * Created by ktchernov on 24/08/2014.
@@ -13,6 +14,8 @@ public class DataModelController {
 
     private DataModel dataModel;
 
+    private SaveQueuer saveQueuer;
+
     private ListListener inProgressListener;
     private ListListener backlogListener;
 
@@ -20,8 +23,9 @@ public class DataModelController {
         void onListChanged();
     }
 
-    public DataModelController() {
+    public DataModelController(SaveQueuer saveQueuer) {
         dataModel = new DataModel();
+        this.saveQueuer = saveQueuer;
     }
 
     public void fromDisk(File jsonFile) throws IOException {
@@ -49,16 +53,6 @@ public class DataModelController {
             }
             throw ex;
         }
-    }
-
-
-    public void toDisk(File outFile) throws IOException {
-        String jsonString = dataModel.serialize();
-
-        outFile.getParentFile().mkdirs();
-        FileWriter fileWriter = new FileWriter(outFile);
-        fileWriter.write(jsonString);
-        fileWriter.flush();
     }
 
     public void setInProgressListener(ListListener listener) {
@@ -114,10 +108,19 @@ public class DataModelController {
     private void notifyInProgressChanged() {
         if (inProgressListener != null)
             inProgressListener.onListChanged();
+
+        onDataChanged();
     }
 
     private void notifyBacklogChanged() {
         if (backlogListener != null)
             backlogListener.onListChanged();
+
+        onDataChanged();
+    }
+
+    private void onDataChanged() {
+        String jsonifiedString = dataModel.serialize();
+        saveQueuer.queueSave(jsonifiedString, null);
     }
 }

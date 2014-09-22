@@ -1,5 +1,6 @@
 package nz.co.lazycoder.personalbacklog;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +14,9 @@ import java.io.File;
 import java.io.IOException;
 
 import nz.co.lazycoder.personalbacklog.addItemDialog.AddItemDialog;
+import nz.co.lazycoder.personalbacklog.io.AsyncSaveQueuer;
+import nz.co.lazycoder.personalbacklog.io.FileStringSaver;
+import nz.co.lazycoder.personalbacklog.io.SaveQueuer;
 import nz.co.lazycoder.personalbacklog.model.BacklogListAdapter;
 import nz.co.lazycoder.personalbacklog.model.DataModelController;
 import nz.co.lazycoder.personalbacklog.model.InProgressListAdapter;
@@ -22,13 +26,39 @@ public class BacklogFragment extends Fragment {
 
     private static final String TAG = BacklogFragment.class.getSimpleName();
 
-    private final DataModelController dataModelController = new DataModelController();
+    private DataModelController dataModelController;
 
     private ListView inProgressView;
     private ListView backlogView;
 
     @Override
-    public View onCreateView (LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // TODO: this should probably not live in the Fragment
+        FileStringSaver fileSaver = new FileStringSaver(getSaveFile());
+        SaveQueuer saveQueuer = new AsyncSaveQueuer(fileSaver);
+
+        dataModelController = new DataModelController(saveQueuer);
+
+        loadDataFromDisk();
+    }
+
+    private void loadDataFromDisk() {
+        File saveFile = getSaveFile();
+        try {
+            dataModelController.fromDisk(saveFile);
+        } catch (IOException ex) {
+            Log.v(TAG, "Could not load from disk", ex);
+        }
+    }
+
+    private File getSaveFile() {
+        return new File(getActivity().getFilesDir(), "pbl.json");
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         View fragmentView = inflater.inflate(R.layout.fragment_personal_backlog, container, false);
@@ -79,33 +109,5 @@ public class BacklogFragment extends Fragment {
             addItemDialog.show();
         }
 
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // TODO: move this
-        File saveFile = new File(getActivity().getExternalCacheDir(), "pbl.json");
-        try {
-            dataModelController.toDisk(saveFile);
-        } catch (IOException ex) {
-            Log.v(TAG, "Could not save to disk", ex);
-        }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-
-        // TODO: move this
-        File saveFile = new File(getActivity().getExternalCacheDir(), "pbl.json");
-        try {
-            dataModelController.fromDisk(saveFile);
-        } catch (IOException ex) {
-            Log.v(TAG, "Could not load from disk", ex);
-        }
-
-        setupModelsAndListeners();
     }
 }
