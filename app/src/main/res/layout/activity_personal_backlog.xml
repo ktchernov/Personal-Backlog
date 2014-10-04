@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:name="nz.co.lazycoder.personalbacklog.BacklogFragment"
+        android:name="nz.co.lazycoder.personalbacklog.view.BacklogFragment"
         tools:layout="@layout/fragment_personal_backlog" />
 
 </FrameLayout>

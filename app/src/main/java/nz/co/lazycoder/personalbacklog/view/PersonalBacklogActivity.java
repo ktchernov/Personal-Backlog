@@ -1,7 +1,9 @@
-package nz.co.lazycoder.personalbacklog;
+package nz.co.lazycoder.personalbacklog.view;
 
 import android.app.Activity;
 import android.os.Bundle;
+
+import nz.co.lazycoder.personalbacklog.R;
 
 
 public class PersonalBacklogActivity extends Activity  {

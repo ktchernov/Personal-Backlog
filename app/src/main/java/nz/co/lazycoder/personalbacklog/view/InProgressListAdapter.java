@@ -1,9 +1,11 @@
-package nz.co.lazycoder.personalbacklog.model;
+package nz.co.lazycoder.personalbacklog.view;
+
+import nz.co.lazycoder.personalbacklog.model.DataModelController;
 
 /**
  * Created by ktchernov on 24/08/2014.
  */
-public class InProgressListAdapter extends ItemListAdapter {
+class InProgressListAdapter extends ItemListAdapter {
 
     public InProgressListAdapter(DataModelController dataModelController) {
         super(dataModelController.getInProgressItemList());

@@ -52,6 +52,8 @@
         <ListView
             android:id="@+id/backlog_list_view"
             android:scrollbars="vertical"
+            android:choiceMode="singleChoice"
+            android:listSelector="@android:color/darker_gray"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             tools:listitem="@layout/backlog_item"/>

@@ -9,4 +9,5 @@
 
     <string name="in_progress_list_header">In progress:</string>
     <string name="backlog_list_header">Backlog:</string>
+    <string name="delete">Delete</string>
 </resources>

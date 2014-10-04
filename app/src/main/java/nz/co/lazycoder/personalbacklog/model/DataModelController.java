@@ -46,11 +46,7 @@ public class DataModelController {
         } catch(FileNotFoundException fileNotFoundException) {
             // swallow - leave model as empty
         } catch (IOException ex) {
-            if (fileInputStream != null) {
-                try {
-                    fileInputStream.close();
-                } catch (IOException closeException) { }
-            }
+            fileInputStream.close();
             throw ex;
         }
     }
