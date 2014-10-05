@@ -40,7 +40,7 @@ public class DataModelController {
                 System.arraycopy(buffer, 0, destBuffer, 0, read);
                 String jsonString = new String(destBuffer, "UTF-8");
 
-                dataModel = DataModel.deserialize(jsonString);
+                dataModel = new DataModelSerializer().deserialize(jsonString);
             }
 
         } catch(FileNotFoundException fileNotFoundException) {
@@ -49,6 +49,14 @@ public class DataModelController {
             fileInputStream.close();
             throw ex;
         }
+    }
+
+    public ListItemsEditor getBacklogEditor() {
+        return new ControllerListEditor(dataModel.backlogItemList, backlogListener);
+    }
+
+    public ListItemsEditor getInProgressEditor() {
+        return new ControllerListEditor(dataModel.inProgressItemList, inProgressListener);
     }
 
     public void setInProgressListener(ListListener listener) {
@@ -60,42 +68,22 @@ public class DataModelController {
     }
 
     public ListItems getInProgressItemList() {
-        return dataModel.getInProgressItemList();
+        return dataModel.inProgressItemList;
     }
 
     public ListItems getBacklogItemList() {
-        return dataModel.getBacklogItemList();
+        return dataModel.backlogItemList;
     }
-
-    public void addItemToBacklog(ListItem newItem) {
-        dataModel.addToBacklog(newItem);
-
-        notifyBacklogChanged();
-    }
-
-
-    public void removeItemFromBacklog(int position) {
-        dataModel.removeFromBacklog(position);
-
-        notifyBacklogChanged();
-    }
-
-    public void removeItemFromInProgress(int position) {
-        dataModel.removeFromInProgress(position);
-
-        notifyInProgressChanged();
-    }
-
 
     public void moveItemFromBacklogToInProgress(int backlogPosition) {
-        dataModel.addToInProgress(dataModel.removeFromBacklog(backlogPosition));
+        dataModel.inProgressItemList.add(dataModel.backlogItemList.remove(backlogPosition));
 
         notifyInProgressChanged();
         notifyBacklogChanged();
     }
 
     public void moveItemFromInProgressToBacklog(int inProgressPosition) {
-        dataModel.addToInProgress(dataModel.removeFromBacklog(inProgressPosition));
+        dataModel.backlogItemList.add(dataModel.inProgressItemList.remove(inProgressPosition));
 
         notifyInProgressChanged();
         notifyBacklogChanged();
@@ -105,18 +93,75 @@ public class DataModelController {
         if (inProgressListener != null)
             inProgressListener.onListChanged();
 
-        onDataChanged();
+        queueSave();
     }
 
     private void notifyBacklogChanged() {
         if (backlogListener != null)
             backlogListener.onListChanged();
 
-        onDataChanged();
+        queueSave();
     }
 
-    private void onDataChanged() {
-        String jsonifiedString = dataModel.serialize();
+    private void queueSave() {
+        String jsonifiedString = new DataModelSerializer().serialize(dataModel);
         saveQueuer.queueSave(jsonifiedString, null);
+    }
+
+    private class ControllerListEditor implements  ListItemsEditor {
+        private MutableListItems list;
+        private ListListener listListener;
+
+        ControllerListEditor(MutableListItems list, ListListener listListener) {
+            this.list = list;
+            this.listListener = listListener;
+        }
+
+        @Override
+        public ListItem remove(int position) {
+            ListItem listItem = list.remove(position);
+            notifyListenerAndQueueSave(true);
+            return listItem;
+        }
+
+        @Override
+        public ListItem removeSelected() {
+            ListItem listItem = list.removeSelected();
+            notifyListenerAndQueueSave(true);
+            return listItem;
+        }
+
+        @Override
+        public void move(int from, int to) {
+            list.add(to, list.remove(from));
+            notifyListenerAndQueueSave(true);
+        }
+
+        @Override
+        public void add(ListItem item) {
+            list.add(item);
+            notifyListenerAndQueueSave(true);
+        }
+
+        @Override
+        public void add(int position, ListItem item) {
+            list.add(position, item);
+            notifyListenerAndQueueSave(true);
+        }
+
+        @Override
+        public void select(int position) {
+            list.select(position);
+            notifyListenerAndQueueSave(false);
+        }
+
+        private void notifyListenerAndQueueSave(boolean queueSave) {
+            if (listListener != null) {
+                listListener.onListChanged();
+            }
+            if (queueSave) {
+                queueSave();
+            }
+        }
     }
 }

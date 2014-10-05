@@ -11,7 +11,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ListView;
+
+import com.mobeta.android.dslv.DragSortController;
+import com.mobeta.android.dslv.DragSortListView;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +25,7 @@ import nz.co.lazycoder.personalbacklog.io.FileStringSaver;
 import nz.co.lazycoder.personalbacklog.io.SaveQueuer;
 import nz.co.lazycoder.personalbacklog.model.DataModelController;
 import nz.co.lazycoder.personalbacklog.model.ListItem;
+import nz.co.lazycoder.personalbacklog.model.ListItemsEditor;
 
 public class BacklogFragment extends Fragment {
 
@@ -30,8 +33,11 @@ public class BacklogFragment extends Fragment {
 
     private DataModelController dataModelController;
 
-    private ListView inProgressView;
-    private ListView backlogView;
+    private DragSortListView inProgressView;
+    private DragSortListView backlogView;
+    private View addButtonView;
+
+
     private ActionMode actionMode;
 
     private ItemListAdapter backlogListAdapter;
@@ -69,8 +75,13 @@ public class BacklogFragment extends Fragment {
 
         View fragmentView = inflater.inflate(R.layout.fragment_personal_backlog, container, false);
 
-        backlogView = (ListView) fragmentView.findViewById(R.id.backlog_list_view);
-        inProgressView = (ListView) fragmentView.findViewById(R.id.in_progress_list_view);
+        backlogView = (DragSortListView) fragmentView.findViewById(R.id.backlog_list_view);
+        setupDragListView(backlogView);
+
+        inProgressView = (DragSortListView) fragmentView.findViewById(R.id.in_progress_list_view);
+        setupDragListView(inProgressView);
+
+        addButtonView = fragmentView.findViewById(R.id.add_row);
 
         setupModelsAndListeners();
 
@@ -81,11 +92,22 @@ public class BacklogFragment extends Fragment {
         return fragmentView;
     }
 
+    private void setupDragListView(DragSortListView dragSortListView) {
+        dragSortListView.setDropListener(new ListDropListener());
+        dragSortListView.setRemoveListener(new ListRemoveListener());
+
+        DragSortController dragSortController = new DragSortController(dragSortListView);
+        dragSortController.setDragHandleId(ItemListAdapter.getDragHandleId());
+
+        dragSortListView.setFloatViewManager(dragSortController);
+        dragSortListView.setOnTouchListener(dragSortController);
+    }
+
     private void setupModelsAndListeners() {
         backlogListAdapter = new BacklogListAdapter(dataModelController);
         backlogView.setAdapter(backlogListAdapter);
 
-        backlogView.setOnItemLongClickListener(new AdapterOnItemLongClickListener(true));
+        backlogView.setOnItemLongClickListener(new AdapterOnItemLongClickListener(dataModelController.getBacklogEditor()));
 
         backlogView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -97,15 +119,26 @@ public class BacklogFragment extends Fragment {
 
         inProgressListAdapter = new InProgressListAdapter(dataModelController);
         inProgressView.setAdapter(inProgressListAdapter);
-        inProgressView.setOnItemLongClickListener(new AdapterOnItemLongClickListener(false));
+        inProgressView.setOnItemLongClickListener(new AdapterOnItemLongClickListener(dataModelController.getInProgressEditor()));
         inProgressView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                dataModelController.removeItemFromInProgress(position);
+                dataModelController.getInProgressEditor().remove(position);
             }
         });
     }
 
+    private void disableEditing() {
+        inProgressView.setEnabled(false);
+        backlogView.setEnabled(false);
+        addButtonView.setEnabled(false);
+    }
+
+    private void enableEditing() {
+        inProgressView.setEnabled(true);
+        backlogView.setEnabled(true);
+        addButtonView.setEnabled(true);
+    }
 
     private class AddItemOnClickListener implements View.OnClickListener {
         @Override
@@ -115,7 +148,7 @@ public class BacklogFragment extends Fragment {
                     new AddItemDialog.OnItemCreatedListener() {
                         @Override
                         public void onItemCreated(ListItem item) {
-                            dataModelController.addItemToBacklog(item);
+                            dataModelController.getBacklogEditor().add(item);
                         }
                     });
             addItemDialog.show();
@@ -124,12 +157,10 @@ public class BacklogFragment extends Fragment {
     }
 
     private class ActionModeCallback implements ActionMode.Callback {
-        private int selectedItemPosition;
-        private boolean backlog;
+        private ListItemsEditor editor;
 
-        public ActionModeCallback(boolean backlog, int selectedItemPosition) {
-            this.backlog = backlog;
-            this.selectedItemPosition = selectedItemPosition;
+        public ActionModeCallback(ListItemsEditor editor) {
+            this.editor = editor;
         }
 
         @Override
@@ -141,6 +172,7 @@ public class BacklogFragment extends Fragment {
 
         @Override
         public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
+            disableEditing();
             return false;
         }
 
@@ -148,12 +180,7 @@ public class BacklogFragment extends Fragment {
         public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
             switch (menuItem.getItemId()) {
                 case R.id.delete_item:
-                    if (backlog) {
-                        dataModelController.removeItemFromBacklog(selectedItemPosition);
-                    }
-                    else {
-                        dataModelController.removeItemFromInProgress(selectedItemPosition);
-                    }
+                    editor.removeSelected();
                     actionMode.finish();
                     return true;
                 default:
@@ -164,21 +191,17 @@ public class BacklogFragment extends Fragment {
         @Override
         public void onDestroyActionMode(ActionMode actionMode) {
             BacklogFragment.this.actionMode = null;
-            if (backlog) {
-                backlogListAdapter.setSelection(-1);
-            }
-            else {
-                inProgressListAdapter.setSelection(-1);
-            }
+            editor.select(-1);
+            enableEditing();
         }
     }
 
     private class AdapterOnItemLongClickListener implements AdapterView.OnItemLongClickListener {
 
-        private boolean isBacklogItem;
+        private ListItemsEditor editor;
 
-        AdapterOnItemLongClickListener(boolean isBacklogItem) {
-            this.isBacklogItem = isBacklogItem;
+        AdapterOnItemLongClickListener(ListItemsEditor editor) {
+            this.editor = editor;
         }
 
         @Override
@@ -187,9 +210,24 @@ public class BacklogFragment extends Fragment {
                 return false;
             }
 
-            actionMode = getActivity().startActionMode(new ActionModeCallback(isBacklogItem, position));
-            ((ItemListAdapter) adapterView.getAdapter()).setSelection(position);
+            actionMode = getActivity().startActionMode(new ActionModeCallback(editor));
+            editor.select(position);
             return true;
+        }
+    }
+
+
+    private class ListDropListener implements DragSortListView.DropListener {
+        @Override
+        public void drop(int from, int to) {
+            dataModelController.getBacklogEditor().move(from, to);
+        }
+    }
+
+    private class ListRemoveListener implements DragSortListView.RemoveListener {
+        @Override
+        public void remove(int which) {
+            dataModelController.getBacklogEditor().remove(which);
         }
     }
 }

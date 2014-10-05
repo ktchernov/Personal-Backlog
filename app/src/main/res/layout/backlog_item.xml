@@ -9,10 +9,18 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:minHeight="@dimen/row_height">
 
+    <ImageView
+        android:id="@+id/drag_handle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_drawer"/>
+
     <TextView
         android:id="@+id/backlog_text_view"
+        android:gravity="center"
+        android:layout_toRightOf="@id/drag_handle"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:text="@string/sample_backlog_item_text"
         />
 

@@ -10,9 +10,10 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.anyBoolean;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -108,7 +109,8 @@ public class AsyncSaveQueuerTest extends InstrumentationTestCase {
 
         waitForListenerToBeNotified();
 
-        verify(saveListener, times(NUM_SAVES)).onSaveComplete(anyBoolean());
+        verify(saveListener, atLeast(1)).onSaveComplete(anyBoolean());
+        verify(saveListener, atMost(NUM_SAVES)).onSaveComplete(anyBoolean());
     }
 
 

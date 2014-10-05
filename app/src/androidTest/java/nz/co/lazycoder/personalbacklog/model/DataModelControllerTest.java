@@ -21,6 +21,9 @@ public class DataModelControllerTest extends InstrumentationTestCase {
     private SaveQueuer saveQueuer;
     private DataModelController.ListListener backlogListener;
     private DataModelController.ListListener inProgressListener;
+    private ListItemsEditor backlogListEditor;
+    private ListItemsEditor inProgressListEditor;
+    private ListItem testItem;
 
     public void setUp() {
         saveQueuer = mock(SaveQueuer.class);
@@ -31,15 +34,18 @@ public class DataModelControllerTest extends InstrumentationTestCase {
 
         dataModelController.setBacklogListener(backlogListener);
         dataModelController.setInProgressListener(inProgressListener);
+
+        backlogListEditor = dataModelController.getBacklogEditor();
+        inProgressListEditor = dataModelController.getInProgressEditor();
     }
 
-    public void testDataModelShouldInitializeEmpty() {
-        assertNoBacklogItems();
-        assertNoInProgressItems();
+    private void addTestItem() {
+        testItem = new ListItem("test");
+        backlogListEditor.add(0, testItem);
     }
 
     private void assertNoBacklogItems() {
-        assertEquals(0, dataModelController.getBacklogItemList().getCount());
+        assertEquals(0, dataModelController.getBacklogItemList().size());
     }
 
     private void assertNoBacklogListenerNotification() {
@@ -60,22 +66,21 @@ public class DataModelControllerTest extends InstrumentationTestCase {
 
 
     private void assertNoInProgressItems() {
-        assertEquals(0, dataModelController.getInProgressItemList().getCount());
+        assertEquals(0, dataModelController.getInProgressItemList().size());
     }
 
     private void verifyAtLeastOneSaveQueued() {
         verify(saveQueuer, atLeast(1)).queueSave(anyString(), any(SaveQueuer.SaveListener.class));
     }
 
-    private void verifyNoOneSavesQueued() {
+    private void verifyNoSavesQueued() {
         verify(saveQueuer, never()).queueSave(anyString(), any(SaveQueuer.SaveListener.class));
     }
 
-    public void testDataModelAddItem() {
-        final ListItem testItem = new ListItem("test");
-        dataModelController.addItemToBacklog(testItem);
+    public void testAddItemToBacklogListEditor() {
+        addTestItem();
 
-        assertEquals(1, dataModelController.getBacklogItemList().getCount());
+        assertEquals(1, dataModelController.getBacklogItemList().size());
         assertSame(testItem, dataModelController.getBacklogItemList().getItem(0));
 
         assertBacklogListenerNotifications(1);
@@ -86,11 +91,9 @@ public class DataModelControllerTest extends InstrumentationTestCase {
     }
 
     public void testDataModelRemoveBacklogItem() {
-        final ListItem testItem = new ListItem("test");
-        // TODO: use constructor instead
-        dataModelController.addItemToBacklog(testItem);
+        addTestItem();
 
-        dataModelController.removeItemFromBacklog(0);
+        dataModelController.getBacklogEditor().remove(0);
 
         assertBacklogListenerNotifications(2);
         assertNoInProgressListenerNotification();
@@ -102,16 +105,14 @@ public class DataModelControllerTest extends InstrumentationTestCase {
     }
 
     public void testDataModelMoveValidItemFromBacklogToInProgress() {
-        final ListItem testItem = new ListItem("test");
-        // TODO: use constructor instead
-        dataModelController.addItemToBacklog(testItem);
+        addTestItem();
 
         dataModelController.moveItemFromBacklogToInProgress(0);
 
         assertBacklogListenerNotifications(2);
         assertInProgressListenerNotifications(1);
 
-        assertEquals(1, dataModelController.getInProgressItemList().getCount());
+        assertEquals(1, dataModelController.getInProgressItemList().size());
         assertSame(testItem, dataModelController.getInProgressItemList().getItem(0));
 
         assertNoBacklogItems();
@@ -122,7 +123,7 @@ public class DataModelControllerTest extends InstrumentationTestCase {
     public void testDataModelMoveInvalidItemFromBacklogToInProgressShouldFail() {
         boolean exceptionThrown = false;
         try {
-            dataModelController.moveItemFromBacklogToInProgress(0);
+            dataModelController.moveItemFromBacklogToInProgress(10);
         }
         catch (Exception exception) {
             exceptionThrown = true;
@@ -132,13 +133,13 @@ public class DataModelControllerTest extends InstrumentationTestCase {
         assertNoBacklogListenerNotification();
         assertNoInProgressListenerNotification();
 
-        verifyNoOneSavesQueued();
+        verifyNoSavesQueued();
     }
 
     public void testDataModelMoveInvalidItemFromInProgressToBacklogShouldFail() {
         boolean exceptionThrown = false;
         try {
-            dataModelController.moveItemFromInProgressToBacklog(0);
+            dataModelController.moveItemFromInProgressToBacklog(10);
         }
         catch (Exception exception) {
             exceptionThrown = true;
@@ -148,6 +149,17 @@ public class DataModelControllerTest extends InstrumentationTestCase {
         assertNoBacklogListenerNotification();
         assertNoInProgressListenerNotification();
 
-        verifyNoOneSavesQueued();
+        verifyNoSavesQueued();
     }
+
+
+    public void testSelectBacklogItemShouldSuccedAndNotifyListener() {
+        assertEquals(-1, dataModelController.getBacklogItemList().getSelectedItemIndex());
+        for (int i = -1; i <= 2; i++) {
+            backlogListEditor.select(i);
+            assertEquals(i, dataModelController.getBacklogItemList().getSelectedItemIndex());
+        }
+        verifyNoSavesQueued();
+    }
+
 }

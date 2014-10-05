@@ -17,15 +17,18 @@ import nz.co.lazycoder.personalbacklog.model.ListItems;
 class ItemListAdapter extends BaseAdapter
 {
     private ListItems items;
-    private int selectedPosition = -1;
 
     ItemListAdapter(ListItems items) {
         this.items = items;
     }
 
+    public static int getDragHandleId() {
+        return R.id.drag_handle;
+    }
+
     @Override
     public int getCount() {
-        return items.getCount();
+        return items.size();
     }
 
     @Override
@@ -39,18 +42,20 @@ class ItemListAdapter extends BaseAdapter
     }
 
     @Override
-    public View getView(int position, View recycleView, ViewGroup parent) {
+    public View getView(final int position, View recycleView, ViewGroup parent) {
         final ViewHolder viewHolder;
         if (recycleView == null) {
-            recycleView = LayoutInflater.from(parent.getContext()).inflate(R.layout.backlog_item, parent, false);
-            viewHolder = new ViewHolder(recycleView);
-            recycleView.setTag(viewHolder);
+            final View cellView = LayoutInflater.from(parent.getContext()).inflate(R.layout.backlog_item, parent, false);
+            viewHolder = new ViewHolder(cellView);
+            cellView.setTag(viewHolder);
+
+            recycleView = cellView;
         }
         else {
             viewHolder = (ViewHolder) recycleView.getTag();
         }
 
-        if (position == selectedPosition) {
+        if (position == items.getSelectedItemIndex()) {
             recycleView.setBackgroundColor(parent.getResources().getColor(android.R.color.holo_blue_light));
         }
         else {
@@ -60,11 +65,6 @@ class ItemListAdapter extends BaseAdapter
         viewHolder.textView.setText(listItem.getTitle());
 
         return recycleView;
-    }
-
-    public void setSelection(int selectedPosition) {
-        this.selectedPosition = selectedPosition;
-        notifyDataSetChanged();
     }
 
     class ViewHolder {
