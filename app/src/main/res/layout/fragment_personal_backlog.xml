@@ -56,8 +56,8 @@
 
         <com.mobeta.android.dslv.DragSortListView
             android:id="@+id/backlog_list_view"
+            android:choiceMode="none"
             android:scrollbars="vertical"
-            android:listSelector="@android:color/darker_gray"
             android:dividerHeight="2dp"
             android:padding="8dp"
             android:layout_width="match_parent"

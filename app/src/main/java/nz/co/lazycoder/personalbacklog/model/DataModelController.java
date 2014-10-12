@@ -16,8 +16,8 @@ public class DataModelController {
 
     private SaveQueuer saveQueuer;
 
-    private ListListener inProgressListener;
-    private ListListener backlogListener;
+    private ControllerListEditor backlogEditor;
+    private ControllerListEditor inProgressEditor;
 
     public interface ListListener {
         void onListChanged();
@@ -41,6 +41,8 @@ public class DataModelController {
                 String jsonString = new String(destBuffer, "UTF-8");
 
                 dataModel = new DataModelSerializer().deserialize(jsonString);
+                inProgressEditor = null;
+                backlogEditor = null;
             }
 
         } catch(FileNotFoundException fileNotFoundException) {
@@ -52,19 +54,25 @@ public class DataModelController {
     }
 
     public ListItemsEditor getBacklogEditor() {
-        return new ControllerListEditor(dataModel.backlogItemList, backlogListener);
+        if (backlogEditor == null) {
+            backlogEditor = new ControllerListEditor(dataModel.backlogItemList);
+        }
+        return backlogEditor;
     }
 
     public ListItemsEditor getInProgressEditor() {
-        return new ControllerListEditor(dataModel.inProgressItemList, inProgressListener);
+        if (inProgressEditor == null) {
+            inProgressEditor = new ControllerListEditor(dataModel.inProgressItemList);
+        }
+        return inProgressEditor;
     }
 
     public void setInProgressListener(ListListener listener) {
-        inProgressListener = listener;
+        inProgressEditor.listListener = listener;
     }
 
     public void setBacklogListener(ListListener listener) {
-        backlogListener = listener;
+        backlogEditor.listListener = listener;
     }
 
     public ListItems getInProgressItemList() {
@@ -90,15 +98,15 @@ public class DataModelController {
     }
 
     private void notifyInProgressChanged() {
-        if (inProgressListener != null)
-            inProgressListener.onListChanged();
+        if (inProgressEditor.listListener != null)
+            inProgressEditor.listListener .onListChanged();
 
         queueSave();
     }
 
     private void notifyBacklogChanged() {
-        if (backlogListener != null)
-            backlogListener.onListChanged();
+        if (backlogEditor.listListener != null)
+            backlogEditor.listListener.onListChanged();
 
         queueSave();
     }
@@ -112,9 +120,8 @@ public class DataModelController {
         private MutableListItems list;
         private ListListener listListener;
 
-        ControllerListEditor(MutableListItems list, ListListener listListener) {
+        ControllerListEditor(MutableListItems list) {
             this.list = list;
-            this.listListener = listListener;
         }
 
         @Override

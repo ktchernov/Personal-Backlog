@@ -2,7 +2,7 @@
 <resources>
 
     <string name="app_name">Personal Backlog</string>
-    <string name="sample_backlog_item_text">Sample backlog item text</string>
+    <string name="sample_backlog_item_text">Sample backlog item text that may get very long and span multiple lines</string>
     <string name="cancel">Cancel</string>
     <string name="add_item">Add</string>
     <string name="add_item_dialog_title">New backlog item</string>

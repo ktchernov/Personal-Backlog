@@ -44,6 +44,11 @@ public class DataModelControllerTest extends InstrumentationTestCase {
         backlogListEditor.add(0, testItem);
     }
 
+    private void addTestItemToInProgress() {
+        testItem = new ListItem("test");
+        inProgressListEditor.add(0, testItem);
+    }
+
     private void assertNoBacklogItems() {
         assertEquals(0, dataModelController.getBacklogItemList().size());
     }
@@ -160,6 +165,24 @@ public class DataModelControllerTest extends InstrumentationTestCase {
             assertEquals(i, dataModelController.getBacklogItemList().getSelectedItemIndex());
         }
         verifyNoSavesQueued();
+    }
+
+    public void testChangeBacklogListenerShouldTakeAffectForEditors() {
+        DataModelController.ListListener newBacklogListener = mock(DataModelController.ListListener.class);
+        dataModelController.setBacklogListener(newBacklogListener);
+        addTestItem();
+
+        verify(backlogListener, never()).onListChanged();
+        verify(newBacklogListener).onListChanged();
+    }
+
+    public void testChangeInProgressListenerShouldTakeAffectForEditors() {
+        DataModelController.ListListener newInProgressListener = mock(DataModelController.ListListener.class);
+        dataModelController.setInProgressListener(newInProgressListener);
+        addTestItemToInProgress();
+
+        verify(inProgressListener, never()).onListChanged();
+        verify(newInProgressListener).onListChanged();
     }
 
 }
