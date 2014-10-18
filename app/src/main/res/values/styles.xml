@@ -5,10 +5,59 @@
 
     </style>
 
-    <style name="Divider">
+    <style name="SectionDivider">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">5dp</item>
         <item name="android:background">?android:attr/listDivider</item>
+    </style>
+
+    <style name="PBLListView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:scrollbars">vertical</item>
+        <item name="android:choiceMode">none</item>
+        <item name="android:dividerHeight">2dp</item>
+        <!--<item name="android:paddingTop">@dimen/standard_vertical_padding</item>-->
+        <!--<item name="android:paddingBottom">@dimen/standard_vertical_padding</item>-->
+        <item name="android:paddingLeft">@dimen/standard_horizontal_padding</item>
+        <item name="android:paddingRight">@dimen/standard_horizontal_padding</item>
+        <item name="float_alpha">0.6</item>
+    </style>
+
+    <style name="PBLListTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">@dimen/standard_horizontal_padding</item>
+        <item name="android:layout_marginRight">@dimen/standard_horizontal_padding</item>
+        <item name="android:layout_marginTop">@dimen/standard_vertical_padding</item>
+        <item name="android:layout_marginBottom">@dimen/standard_vertical_padding</item>
+        <item name="android:textSize">@dimen/text_size_large</item>
+    </style>
+
+    <style name="PBLAddItemButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">@dimen/row_height</item>
+        <item name="android:clickable">true</item>
+        <item name="android:background">?android:attr/selectableItemBackground</item>
+    </style>
+
+    <style name="PBLSmallClickableIcon">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:minHeight">@dimen/clickable_icon_small_size</item>
+        <item name="android:minWidth">@dimen/clickable_icon_small_size</item>
+        <item name="android:scaleType">center</item>
+    </style>
+
+    <style name="PBLAdItemImageView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:layout_centerHorizontal">true</item>
+        <item name="android:background">@drawable/ic_action_new</item>
+        <item name="android:contentDescription">@string/add_item</item>
     </style>
 
 </resources>

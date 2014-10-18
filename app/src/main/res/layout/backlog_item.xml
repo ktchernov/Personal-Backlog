@@ -8,13 +8,8 @@
 
     <ImageView
         android:id="@+id/drag_handle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:scaleType="center"
-        android:src="@drawable/ic_action_drag_up_down"/>
+        android:src="@drawable/ic_action_drag_up_down"
+        style="@style/PBLSmallClickableIcon" />
 
     <TextView
         android:id="@+id/backlog_text_view"
@@ -24,20 +19,15 @@
         android:layout_toLeftOf="@+id/options_handle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
+        android:textSize="@dimen/text_size_normal"
         android:text="@string/sample_backlog_item_text"
         />
 
 
     <ImageView
         android:id="@id/options_handle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
         android:layout_alignParentRight="true"
-        android:minHeight="48dp"
-        android:minWidth="48dp"
-        android:scaleType="center"
-        android:src="@drawable/ic_action_overflow"/>
+        android:src="@drawable/ic_action_overflow"
+        style="@style/PBLSmallClickableIcon" />
 
 </RelativeLayout>
