@@ -30,7 +30,7 @@
     <LinearLayout
         android:id="@+id/backlog_view_group"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@id/list_divider"
         android:layout_above="@+id/add_row"
         android:orientation="vertical">
@@ -55,7 +55,8 @@
 
         <ImageView
             android:id="@+id/add_item"
-            style="@style/PBLAdItemImageView" />
+            android:contentDescription="@string/add_item"
+            style="@style/PBLAddItemImageView" />
 
     </RelativeLayout>
 

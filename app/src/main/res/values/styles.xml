@@ -49,13 +49,12 @@
         <item name="android:scaleType">center</item>
     </style>
 
-    <style name="PBLAdItemImageView">
+    <style name="PBLAddItemImageView">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_centerVertical">true</item>
         <item name="android:layout_centerHorizontal">true</item>
         <item name="android:background">@drawable/ic_action_new</item>
-        <item name="android:contentDescription">@string/add_item</item>
     </style>
 
 </resources>
