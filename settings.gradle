@@ -1,4 +1,2 @@
-include
-
 include ':drag-sort-listview:library', ':app', ':library'
 project(':drag-sort-listview:library').projectDir = new File(settingsDir, '../drag-sort-listview/library')
