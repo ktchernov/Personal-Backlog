@@ -1,62 +1,74 @@
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    >
+    android:layout_height="match_parent">
 
     <LinearLayout
-        android:id="@+id/in_progress_view_group"
+        android:id="@+id/lists_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="96dp"
-        android:orientation="vertical">
-
-        <TextView
-            android:id="@+id/in_progress_section_header"
-            android:text="@string/in_progress_list_header"
-            style="@style/PBLListTitle" />
-
-        <com.mobeta.android.dslv.DragSortListView
-            android:id="@+id/in_progress_list_view"
-            tools:listitem="@layout/backlog_item"
-            style="@style/PBLListView" />
-    </LinearLayout>
-
-    <View style="@style/SectionDivider"
-        android:id="@+id/list_divider"
-        android:layout_below="@id/in_progress_view_group"/>
-
-    <LinearLayout
-        android:id="@+id/backlog_view_group"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/list_divider"
         android:layout_above="@+id/add_row"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/backlog_section_header"
-            android:text="@string/backlog_list_header"
-            style="@style/PBLListTitle" />
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <com.mobeta.android.dslv.DragSortListView
-            android:id="@+id/backlog_list_view"
-            style="@style/PBLListView"
-            tools:listitem="@layout/backlog_item"/>
+            <TextView
+                android:id="@+id/in_progress_section_header"
+                style="@style/PBLListTitle"
+                android:layout_alignParentTop="true"
+                android:text="@string/in_progress_list_header" />
+
+            <com.mobeta.android.dslv.DragSortListView
+                android:id="@+id/in_progress_list_view"
+                android:layout_below="@id/in_progress_section_header"
+                android:layout_above="@+id/list_divider"
+                style="@style/PBLListView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                tools:listitem="@layout/backlog_item" />
+
+            <View style="@style/SectionDivider"
+                android:id="@id/list_divider"
+                android:layout_alignParentBottom="true"/>
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/backlog_section_header"
+                style="@style/PBLListTitle"
+                android:text="@string/backlog_list_header" />
+
+            <com.mobeta.android.dslv.DragSortListView
+                android:id="@+id/backlog_list_view"
+                android:layout_below="@id/backlog_section_header"
+                style="@style/PBLListView"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_alignParentBottom="true"
+                tools:listitem="@layout/backlog_item" />
+        </RelativeLayout>
     </LinearLayout>
-
 
 
     <RelativeLayout
         android:id="@+id/add_row"
-        android:layout_alignParentBottom="true"
-        style="@style/PBLAddItemButton">
+        style="@style/PBLAddItemButton"
+        android:layout_alignParentBottom="true">
 
         <ImageView
             android:id="@+id/add_item"
-            android:contentDescription="@string/add_item"
-            style="@style/PBLAddItemImageView" />
+            style="@style/PBLAddItemImageView"
+            android:contentDescription="@string/add_item" />
 
     </RelativeLayout>
 
