@@ -2,11 +2,15 @@ package nz.co.lazycoder.personalbacklog.view;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 
 import com.mobeta.android.dslv.DragSortController;
@@ -84,7 +88,15 @@ public class BacklogFragment extends Fragment {
         dragSortListView.setDropListener(new ListDropListener(editor));
         dragSortListView.setRemoveListener(new ListRemoveListener(editor));
 
-        DragSortController dragSortController = new DragSortController(dragSortListView);
+        DragSortController dragSortController;
+
+        // TODO: temporary hacky if clause
+        if (dragSortListView == this.backlogView) {
+            dragSortController = new BacklogDragSortController(dragSortListView);
+        }
+        else {
+            dragSortController = new DragSortController(dragSortListView);
+        }
         dragSortController.setDragHandleId(ItemListAdapter.getDragHandleId());
         dragSortController.setRemoveEnabled(true);
 
@@ -176,6 +188,97 @@ public class BacklogFragment extends Fragment {
         @Override
         public void remove(int which) {
             editor.remove(which);
+        }
+    }
+
+    private class BacklogDragSortController extends DragSortController {
+        public static final int REMOVE_DELAY_MILLIS = 500;
+        public static final int SCROLL_TIMEOUT_MILLIS = 500;
+        private DragSortListView dragSortListView;
+        private long lastScrollTime;
+        private int dragPosition = MISS;
+
+        private Handler handler = new Handler();
+        private Runnable delayedStopAndRemoveRunnable;
+
+        public BacklogDragSortController(DragSortListView dslv) {
+            super(dslv);
+            dragSortListView = dslv;
+            dragSortListView.setOnScrollListener(new AbsListView.OnScrollListener() {
+                private int previousFirstVisible;
+
+                @Override
+                public void onScrollStateChanged(AbsListView view, int scrollState) {
+                }
+
+                @Override
+                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                    if (previousFirstVisible != firstVisibleItem) {
+                        previousFirstVisible = firstVisibleItem;
+                        lastScrollTime = System.currentTimeMillis();
+                        stopDelayedCallback();
+                    }
+                }
+            });
+        }
+
+        @Override
+        public int startDragPosition(MotionEvent ev) {
+            dragPosition = super.startDragPosition(ev);
+            return dragPosition;
+        }
+
+        @Override
+        public void onDragFloatView(View floatView, Point floatPoint, Point touchPoint) {
+            super.onDragFloatView(floatView, floatPoint, touchPoint);
+
+            boolean needCancel = true;
+
+            if (floatView != null) {
+                int floatViewHeightThreshold = floatView.getMeasuredHeight() / 2;
+
+                boolean draggingOutsideUp = floatPoint.y < -floatViewHeightThreshold && dragSortListView.getFirstVisiblePosition() == 0;
+                boolean scrollTimedOut = (lastScrollTime == 0 || System.currentTimeMillis() - lastScrollTime > SCROLL_TIMEOUT_MILLIS);
+
+                if (draggingOutsideUp && scrollTimedOut) {
+                    needCancel = false;
+                    if (delayedStopAndRemoveRunnable == null) {
+                        delayedStopAndRemoveRunnable = new StopAndRemoveRunnable();
+                        handler.postDelayed(delayedStopAndRemoveRunnable, REMOVE_DELAY_MILLIS);
+                    }
+                }
+            }
+
+            if (needCancel) {
+                stopDelayedCallback();
+            }
+
+        }
+
+        @Override
+        public void onDestroyFloatView(View floatView) {
+            super.onDestroyFloatView(floatView);
+            stopDelayedCallback();
+            dragPosition = MISS;
+        }
+
+        private void stopDelayedCallback() {
+            handler.removeCallbacks(delayedStopAndRemoveRunnable);
+            delayedStopAndRemoveRunnable = null;
+        }
+
+        private class StopAndRemoveRunnable implements Runnable {
+            private final int dragPosition;
+
+            StopAndRemoveRunnable() {
+                this.dragPosition = BacklogDragSortController.this.dragPosition;
+            }
+            @Override
+            public void run() {
+                dragSortListView.cancelDrag();
+                dataModelController.moveItemFromBacklogToInProgress(this.dragPosition);
+                delayedStopAndRemoveRunnable = null;
+            }
         }
     }
 }
