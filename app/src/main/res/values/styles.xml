@@ -1,23 +1,25 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat">
-
+    <style name="AppTheme" parent="Theme.AppCompat.Light">
+        <item name="colorPrimary">#12c700</item>
+        <item name="colorPrimaryDark">#056f00</item>
+        <item name="colorAccent">#e65100</item>
     </style>
 
     <style name="SectionDivider">
         <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">5dp</item>
-        <item name="android:background">?android:attr/listDivider</item>
+        <item name="android:layout_height">2dp</item>
+        <item name="android:background">?attr/colorAccent</item>
+        <item name="android:divider">?attr/colorAccent</item>
     </style>
 
     <style name="PBLListView">
         <item name="android:scrollbars">vertical</item>
         <item name="android:choiceMode">none</item>
-        <item name="android:dividerHeight">2dp</item>
-        <item name="android:paddingLeft">@dimen/standard_horizontal_padding</item>
-        <item name="android:paddingRight">@dimen/standard_horizontal_padding</item>
-        <item name="float_alpha">0.6</item>
+        <item name="android:divider">@null</item>
+        <item name="android:dividerHeight">0dp</item>
+        <item name="float_alpha">0.9</item>
         <item name="parallax_enabled">true</item>
     </style>
 
@@ -31,14 +33,6 @@
         <item name="android:textSize">@dimen/text_size_large</item>
     </style>
 
-    <style name="PBLAddItemButton">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:minHeight">@dimen/row_height</item>
-        <item name="android:clickable">true</item>
-        <item name="android:background">?android:attr/selectableItemBackground</item>
-    </style>
-
     <style name="PBLSmallClickableIcon">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
@@ -48,12 +42,12 @@
         <item name="android:scaleType">center</item>
     </style>
 
-    <style name="PBLAddItemImageView">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_centerVertical">true</item>
-        <item name="android:layout_centerHorizontal">true</item>
-        <item name="android:background">@drawable/ic_action_new</item>
+    <style name="PBLItem">
+        <item name="android:paddingLeft">@dimen/standard_horizontal_padding</item>
+        <item name="android:paddingRight">@dimen/standard_horizontal_padding</item>
+        <item name="android:minHeight">@dimen/row_height</item>
+        <item name="android:background">@android:color/white</item>
+        <item name="cardCornerRadius">@dimen/item_card_corner_radius</item>
     </style>
 
 </resources>

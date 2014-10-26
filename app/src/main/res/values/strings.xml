@@ -10,4 +10,7 @@
     <string name="in_progress_list_header">In progress:</string>
     <string name="backlog_list_header">Backlog:</string>
     <string name="delete">Delete</string>
+
+    <string name="accessibility_drag">Drag handle - up or down</string>
+    <string name="accessibility_item_options">Item options</string>
 </resources>

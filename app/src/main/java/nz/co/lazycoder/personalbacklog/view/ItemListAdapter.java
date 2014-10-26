@@ -1,6 +1,5 @@
 package nz.co.lazycoder.personalbacklog.view;
 
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -65,12 +64,13 @@ public class ItemListAdapter extends BaseAdapter
 
         viewHolder.itemPosition = position;
 
-        if (position == items.getSelectedItemIndex()) {
-            recycleView.setBackgroundColor(parent.getResources().getColor(android.R.color.holo_blue_light));
-        }
-        else {
-            recycleView.setBackgroundColor(Color.TRANSPARENT);
-        }
+//        TODO: review removing this
+//        if (position == items.getSelectedItemIndex()) {
+//            recycleView.setBackgroundColor(parent.getResources().getColor(android.R.color.holo_blue_light));
+//        }
+//        else {
+//            recycleView.setBackgroundColor(Color.TRANSPARENT);
+//        }
         ListItem listItem = items.getItem(position);
         viewHolder.textView.setText(listItem.getTitle());
 

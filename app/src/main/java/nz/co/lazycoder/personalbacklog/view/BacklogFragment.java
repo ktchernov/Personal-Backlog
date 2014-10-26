@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
+import com.shamanland.fab.ShowHideOnScroll;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,6 +81,7 @@ public class BacklogFragment extends Fragment {
 
         View addButtonView = fragmentView.findViewById(R.id.add_row);
         addButtonView.setOnClickListener(new AddItemOnClickListener());
+        backlogView.setOnTouchListener(new ShowHideOnScroll(addButtonView));
 
         return fragmentView;
     }

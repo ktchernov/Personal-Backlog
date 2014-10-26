@@ -1,33 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:minHeight="@dimen/row_height">
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    style="@style/PBLItem">
 
-    <ImageView
-        android:id="@+id/drag_handle"
-        android:src="@drawable/ic_action_drag_up_down"
-        style="@style/PBLSmallClickableIcon" />
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/backlog_text_view"
-        android:gravity="center_vertical"
-        android:layout_centerVertical="true"
-        android:layout_toRightOf="@id/drag_handle"
-        android:layout_toLeftOf="@+id/options_handle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="@dimen/text_size_normal"
-        android:text="@string/sample_backlog_item_text"
-        />
+        <ImageView
+            android:id="@+id/drag_handle"
+            style="@style/PBLSmallClickableIcon"
+            android:contentDescription="@string/accessibility_drag"
+            android:src="@drawable/ic_action_drag_up_down" />
+
+        <TextView
+            android:id="@+id/backlog_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/options_handle"
+            android:layout_toEndOf="@id/drag_handle"
+            android:gravity="center_vertical"
+            android:text="@string/sample_backlog_item_text"
+            android:textSize="@dimen/text_size_normal" />
 
 
-    <ImageView
-        android:id="@id/options_handle"
-        android:layout_alignParentRight="true"
-        android:src="@drawable/ic_action_overflow"
-        style="@style/PBLSmallClickableIcon" />
+        <ImageView
+            android:id="@id/options_handle"
+            style="@style/PBLSmallClickableIcon"
+            android:layout_alignParentEnd="true"
+            android:contentDescription="@string/accessibility_item_options"
+            android:src="@drawable/ic_action_overflow" />
 
-</RelativeLayout>
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>
