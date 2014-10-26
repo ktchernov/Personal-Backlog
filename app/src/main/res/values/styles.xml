@@ -19,7 +19,9 @@
         <item name="android:choiceMode">none</item>
         <item name="android:divider">@null</item>
         <item name="android:dividerHeight">0dp</item>
+        <item name="float_background_color">@android:color/transparent</item>
         <item name="float_alpha">0.9</item>
+        <item name="use_default_controller">false</item>
         <item name="parallax_enabled">true</item>
     </style>
 

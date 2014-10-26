@@ -2,20 +2,16 @@ package nz.co.lazycoder.personalbacklog.view;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.graphics.Point;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.AdapterView;
 
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
-import com.shamanland.fab.ShowHideOnScroll;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,6 +33,7 @@ public class BacklogFragment extends Fragment {
 
     private DragSortListView inProgressView;
     private DragSortListView backlogView;
+    private ShowHideFloatingActionButton showHideAddButton;
 
 
     @Override
@@ -71,6 +68,11 @@ public class BacklogFragment extends Fragment {
 
         View fragmentView = inflater.inflate(R.layout.fragment_personal_backlog, container, false);
 
+        View addButtonView = fragmentView.findViewById(R.id.add_row);
+        addButtonView.setOnClickListener(new AddItemOnClickListener());
+
+        showHideAddButton = new ShowHideFloatingActionButton(addButtonView);
+
         backlogView = (DragSortListView) fragmentView.findViewById(R.id.backlog_list_view);
         setupDragListView(backlogView, dataModelController.getBacklogEditor());
 
@@ -78,10 +80,6 @@ public class BacklogFragment extends Fragment {
         setupDragListView(inProgressView, dataModelController.getInProgressEditor());
 
         setupModelsAndListeners();
-
-        View addButtonView = fragmentView.findViewById(R.id.add_row);
-        addButtonView.setOnClickListener(new AddItemOnClickListener());
-        backlogView.setOnTouchListener(new ShowHideOnScroll(addButtonView));
 
         return fragmentView;
     }
@@ -94,10 +92,12 @@ public class BacklogFragment extends Fragment {
 
         // TODO: temporary hacky if clause
         if (dragSortListView == this.backlogView) {
-            dragSortController = new BacklogDragSortController(dragSortListView);
+            dragSortController = new BacklogDragSortController(dragSortListView, dataModelController,
+                    new BacklogDragSortListener(showHideAddButton));
         }
         else {
             dragSortController = new DragSortController(dragSortListView);
+            dragSortController.setBackgroundColor(Color.TRANSPARENT);
         }
         dragSortController.setDragHandleId(ItemListAdapter.getDragHandleId());
         dragSortController.setRemoveEnabled(true);
@@ -150,6 +150,7 @@ public class BacklogFragment extends Fragment {
     }
 
     private class AddItemOnClickListener implements View.OnClickListener {
+
         @Override
         public void onClick(View view) {
             AddItemDialog addItemDialog = new AddItemDialog(
@@ -193,93 +194,31 @@ public class BacklogFragment extends Fragment {
         }
     }
 
-    private class BacklogDragSortController extends DragSortController {
-        public static final int REMOVE_DELAY_MILLIS = 500;
-        public static final int SCROLL_TIMEOUT_MILLIS = 500;
-        private DragSortListView dragSortListView;
-        private long lastScrollTime;
-        private int dragPosition = MISS;
+    private static class BacklogDragSortListener implements BacklogDragSortController.DragSortListener {
 
-        private Handler handler = new Handler();
-        private Runnable delayedStopAndRemoveRunnable;
+        private ShowHideFloatingActionButton showHideAddButton;
 
-        public BacklogDragSortController(DragSortListView dslv) {
-            super(dslv);
-            dragSortListView = dslv;
-            dragSortListView.setOnScrollListener(new AbsListView.OnScrollListener() {
-                private int previousFirstVisible;
-
-                @Override
-                public void onScrollStateChanged(AbsListView view, int scrollState) {
-                }
-
-                @Override
-                public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                    if (previousFirstVisible != firstVisibleItem) {
-                        previousFirstVisible = firstVisibleItem;
-                        lastScrollTime = System.currentTimeMillis();
-                        stopDelayedCallback();
-                    }
-                }
-            });
+        BacklogDragSortListener(ShowHideFloatingActionButton showHideAddButton) {
+            this.showHideAddButton = showHideAddButton;
         }
 
         @Override
-        public int startDragPosition(MotionEvent ev) {
-            dragPosition = super.startDragPosition(ev);
-            return dragPosition;
+        public void onDragStarted() {
+            showHideAddButton.hide();
         }
 
         @Override
-        public void onDragFloatView(View floatView, Point floatPoint, Point touchPoint) {
-            super.onDragFloatView(floatView, floatPoint, touchPoint);
-
-            boolean needCancel = true;
-
-            if (floatView != null) {
-                int floatViewHeightThreshold = floatView.getMeasuredHeight() / 2;
-
-                boolean draggingOutsideUp = floatPoint.y < -floatViewHeightThreshold && dragSortListView.getFirstVisiblePosition() == 0;
-                boolean scrollTimedOut = (lastScrollTime == 0 || System.currentTimeMillis() - lastScrollTime > SCROLL_TIMEOUT_MILLIS);
-
-                if (draggingOutsideUp && scrollTimedOut) {
-                    needCancel = false;
-                    if (delayedStopAndRemoveRunnable == null) {
-                        delayedStopAndRemoveRunnable = new StopAndRemoveRunnable();
-                        handler.postDelayed(delayedStopAndRemoveRunnable, REMOVE_DELAY_MILLIS);
-                    }
-                }
-            }
-
-            if (needCancel) {
-                stopDelayedCallback();
-            }
-
+        public void onDragFinished() {
+            showHideAddButton.show();
         }
 
         @Override
-        public void onDestroyFloatView(View floatView) {
-            super.onDestroyFloatView(floatView);
-            stopDelayedCallback();
-            dragPosition = MISS;
-        }
-
-        private void stopDelayedCallback() {
-            handler.removeCallbacks(delayedStopAndRemoveRunnable);
-            delayedStopAndRemoveRunnable = null;
-        }
-
-        private class StopAndRemoveRunnable implements Runnable {
-            private final int dragPosition;
-
-            StopAndRemoveRunnable() {
-                this.dragPosition = BacklogDragSortController.this.dragPosition;
+        public void onScrollWithoutDragging(boolean down) {
+            if (down) {
+                showHideAddButton.hide();
             }
-            @Override
-            public void run() {
-                dragSortListView.cancelDrag();
-                dataModelController.moveItemFromBacklogToInProgress(this.dragPosition);
-                delayedStopAndRemoveRunnable = null;
+            else {
+                showHideAddButton.show();
             }
         }
     }
