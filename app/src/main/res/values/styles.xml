@@ -11,7 +11,6 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">2dp</item>
         <item name="android:background">?attr/colorAccent</item>
-        <item name="android:divider">?attr/colorAccent</item>
     </style>
 
     <style name="PBLListView">
@@ -33,6 +32,7 @@
         <item name="android:layout_marginTop">@dimen/standard_vertical_padding</item>
         <item name="android:layout_marginBottom">@dimen/standard_vertical_padding</item>
         <item name="android:textSize">@dimen/text_size_large</item>
+        <item name="android:textStyle">bold</item>
     </style>
 
     <style name="PBLSmallClickableIcon">
