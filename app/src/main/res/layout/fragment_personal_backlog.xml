@@ -29,6 +29,7 @@
                 style="@style/PBLListView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                custom:drag_outside_bounds_down_enabled="true"
                 tools:listitem="@layout/backlog_item" />
 
             <View style="@style/SectionDivider"

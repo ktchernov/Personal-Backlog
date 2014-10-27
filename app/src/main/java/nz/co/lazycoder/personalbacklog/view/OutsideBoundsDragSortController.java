@@ -9,49 +9,45 @@ import android.widget.AbsListView;
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 
-import nz.co.lazycoder.personalbacklog.model.DataModelController;
-
 /**
 * Created by ktchernov on 26/10/2014.
 */
-class BacklogDragSortController extends DragSortController {
+class OutsideBoundsDragSortController extends DragSortController {
     public static final int REMOVE_DELAY_MILLIS = 500;
     public static final int SCROLL_TIMEOUT_MILLIS = 500;
     private DragSortListView dragSortListView;
     private long lastDragScrollTime;
     private int dragPosition = MISS;
 
-    private DataModelController dataModelController;
-
     private Handler handler = new Handler();
-    private Runnable delayedStopAndRemoveRunnable;
+    private Runnable delayedDraggedOutsideBoundsTask;
 
-    private DragSortListener dragSortListener;
+    private DragSortControllerListener dragSortControllerListener;
 
-    public interface DragSortListener {
+    public interface DragSortControllerListener {
         public void onDragStarted();
         public void onDragFinished();
         public void onScrollWithoutDragging(boolean down);
+        public void onDraggedOutsideBounds(int position, boolean down);
 
     }
 
-    public BacklogDragSortController(DragSortListView dragSortListView, DataModelController dataModelController, DragSortListener dragSortListener) {
+    public OutsideBoundsDragSortController(DragSortListView dragSortListView, DragSortControllerListener dragSortControllerListener) {
         super(dragSortListView);
         setBackgroundColor(Color.TRANSPARENT);
 
         this.dragSortListView = dragSortListView;
         this.dragSortListView.setOnScrollListener(new OnScrollListener());
 
-        this.dataModelController = dataModelController;
-        this.dragSortListener = dragSortListener;
+        this.dragSortControllerListener = dragSortControllerListener;
     }
 
     @Override
     public View onCreateFloatView(int dragPosition) {
         this.dragPosition = dragPosition;
 
-        if (dragSortListener != null)
-            dragSortListener.onDragStarted();
+        if (dragSortControllerListener != null)
+            dragSortControllerListener.onDragStarted();
 
         return super.onCreateFloatView(dragPosition);
     }
@@ -64,15 +60,21 @@ class BacklogDragSortController extends DragSortController {
 
         if (floatView != null) {
             int floatViewHeightThreshold = floatView.getMeasuredHeight() / 2;
+            int listBottom = dragSortListView.getMeasuredHeight() - dragSortListView.getPaddingBottom();
 
-            boolean draggingOutsideUp = floatPoint.y < -floatViewHeightThreshold && dragSortListView.getFirstVisiblePosition() == 0;
+            boolean showingFirstItem = dragSortListView.getFirstVisiblePosition() == 0;
+            boolean showingLastItem = dragSortListView.getLastVisiblePosition() == dragSortListView.getAdapter().getCount() - 1;
+
+            boolean draggingOutsideUp = floatPoint.y <  dragSortListView.getPaddingTop() - floatViewHeightThreshold && showingFirstItem;
+            boolean draggingOutsideDown = floatPoint.y > listBottom - floatViewHeightThreshold && showingLastItem;
+
             boolean scrollTimedOut = (lastDragScrollTime == 0 || System.currentTimeMillis() - lastDragScrollTime > SCROLL_TIMEOUT_MILLIS);
 
-            if (draggingOutsideUp && scrollTimedOut) {
+            if ((draggingOutsideUp || draggingOutsideDown) && scrollTimedOut) {
                 needCancel = false;
-                if (delayedStopAndRemoveRunnable == null) {
-                    delayedStopAndRemoveRunnable = new StopAndRemoveRunnable();
-                    handler.postDelayed(delayedStopAndRemoveRunnable, REMOVE_DELAY_MILLIS);
+                if (delayedDraggedOutsideBoundsTask == null) {
+                    delayedDraggedOutsideBoundsTask = new DelayedDraggedOutsideBounds(draggingOutsideDown);
+                    handler.postDelayed(delayedDraggedOutsideBoundsTask, REMOVE_DELAY_MILLIS);
                 }
             }
         }
@@ -90,26 +92,31 @@ class BacklogDragSortController extends DragSortController {
         stopDelayedCallback();
         dragPosition = MISS;
 
-        if (dragSortListener != null)
-            dragSortListener.onDragFinished();
+        if (dragSortControllerListener != null)
+            dragSortControllerListener.onDragFinished();
     }
 
     private void stopDelayedCallback() {
-        handler.removeCallbacks(delayedStopAndRemoveRunnable);
-        delayedStopAndRemoveRunnable = null;
+        handler.removeCallbacks(delayedDraggedOutsideBoundsTask);
+        delayedDraggedOutsideBoundsTask = null;
     }
 
-    private class StopAndRemoveRunnable implements Runnable {
+    private class DelayedDraggedOutsideBounds implements Runnable {
         private final int dragPosition;
+        private final boolean draggingDown;
 
-        StopAndRemoveRunnable() {
-            this.dragPosition = BacklogDragSortController.this.dragPosition;
+        DelayedDraggedOutsideBounds(boolean draggingDown) {
+            this.dragPosition = OutsideBoundsDragSortController.this.dragPosition;
+            this.draggingDown = draggingDown;
         }
         @Override
         public void run() {
             dragSortListView.cancelDrag();
-            dataModelController.moveItemFromBacklogToInProgress(this.dragPosition);
-            delayedStopAndRemoveRunnable = null;
+
+            if (dragSortControllerListener != null) {
+                dragSortControllerListener.onDraggedOutsideBounds(dragPosition, draggingDown);
+            }
+            delayedDraggedOutsideBoundsTask = null;
         }
     }
 
@@ -133,11 +140,11 @@ class BacklogDragSortController extends DragSortController {
         }
 
         private void notifyListenerOfScrollWithoutDrag(int firstVisibleItem) {
-            if (dragSortListener != null) {
+            if (dragSortControllerListener != null) {
                 if (previousFirstVisible < firstVisibleItem) {
-                    dragSortListener.onScrollWithoutDragging(true);
+                    dragSortControllerListener.onScrollWithoutDragging(true);
                 } else if (previousFirstVisible > firstVisibleItem) {
-                    dragSortListener.onScrollWithoutDragging(false);
+                    dragSortControllerListener.onScrollWithoutDragging(false);
                 }
             }
         }

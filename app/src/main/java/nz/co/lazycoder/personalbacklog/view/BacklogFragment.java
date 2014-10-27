@@ -2,13 +2,11 @@ package nz.co.lazycoder.personalbacklog.view;
 
 import android.app.Activity;
 import android.app.Fragment;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 
 import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
@@ -24,6 +22,8 @@ import nz.co.lazycoder.personalbacklog.io.SaveQueuer;
 import nz.co.lazycoder.personalbacklog.model.DataModelController;
 import nz.co.lazycoder.personalbacklog.model.ListItem;
 import nz.co.lazycoder.personalbacklog.model.ListItemsEditor;
+
+import static nz.co.lazycoder.personalbacklog.view.OutsideBoundsDragSortController.DragSortControllerListener;
 
 public class BacklogFragment extends Fragment {
 
@@ -74,36 +74,14 @@ public class BacklogFragment extends Fragment {
         showHideAddButton = new ShowHideFloatingActionButton(addButtonView);
 
         backlogView = (DragSortListView) fragmentView.findViewById(R.id.backlog_list_view);
-        setupDragListView(backlogView, dataModelController.getBacklogEditor());
+        setupDragListView(backlogView, dataModelController.getBacklogEditor(), new BacklogDragSortControllerListener());
 
         inProgressView = (DragSortListView) fragmentView.findViewById(R.id.in_progress_list_view);
-        setupDragListView(inProgressView, dataModelController.getInProgressEditor());
+        setupDragListView(inProgressView, dataModelController.getInProgressEditor(), new InProgressDragSortControllerListener());
 
         setupModelsAndListeners();
 
         return fragmentView;
-    }
-
-    private void setupDragListView(DragSortListView dragSortListView, ListItemsEditor editor) {
-        dragSortListView.setDropListener(new ListDropListener(editor));
-        dragSortListView.setRemoveListener(new ListRemoveListener(editor));
-
-        DragSortController dragSortController;
-
-        // TODO: temporary hacky if clause
-        if (dragSortListView == this.backlogView) {
-            dragSortController = new BacklogDragSortController(dragSortListView, dataModelController,
-                    new BacklogDragSortListener(showHideAddButton));
-        }
-        else {
-            dragSortController = new DragSortController(dragSortListView);
-            dragSortController.setBackgroundColor(Color.TRANSPARENT);
-        }
-        dragSortController.setDragHandleId(ItemListAdapter.getDragHandleId());
-        dragSortController.setRemoveEnabled(true);
-
-        dragSortListView.setFloatViewManager(dragSortController);
-        dragSortListView.setOnTouchListener(dragSortController);
     }
 
     private void setupModelsAndListeners() {
@@ -117,21 +95,6 @@ public class BacklogFragment extends Fragment {
             }
         });
 
-        backlogView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                dataModelController.moveItemFromBacklogToInProgress(position);
-            }
-        });
-
-        backlogView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                dataModelController.moveItemFromBacklogToInProgress(position);
-            }
-        });
-
-
         ItemListAdapter inProgressListAdapter = new InProgressListAdapter(dataModelController);
         inProgressView.setAdapter(inProgressListAdapter);
 
@@ -141,12 +104,21 @@ public class BacklogFragment extends Fragment {
                 dataModelController.getInProgressEditor().remove(listItemPosition);
             }
         });
-        inProgressView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                dataModelController.moveItemFromInProgressToBacklog(position);
-            }
-        });
+    }
+
+    private void setupDragListView(DragSortListView dragSortListView, ListItemsEditor editor,
+                                   DragSortControllerListener dragSortControllerListener) {
+        dragSortListView.setDropListener(new ListDropListener(editor));
+        dragSortListView.setRemoveListener(new ListRemoveListener(editor));
+
+        DragSortController dragSortController = new OutsideBoundsDragSortController(
+                dragSortListView, dragSortControllerListener);
+
+        dragSortController.setDragHandleId(ItemListAdapter.getDragHandleId());
+        dragSortController.setRemoveEnabled(true);
+
+        dragSortListView.setFloatViewManager(dragSortController);
+        dragSortListView.setOnTouchListener(dragSortController);
     }
 
     private class AddItemOnClickListener implements View.OnClickListener {
@@ -194,13 +166,7 @@ public class BacklogFragment extends Fragment {
         }
     }
 
-    private static class BacklogDragSortListener implements BacklogDragSortController.DragSortListener {
-
-        private ShowHideFloatingActionButton showHideAddButton;
-
-        BacklogDragSortListener(ShowHideFloatingActionButton showHideAddButton) {
-            this.showHideAddButton = showHideAddButton;
-        }
+    private class BacklogDragSortControllerListener implements DragSortControllerListener {
 
         @Override
         public void onDragStarted() {
@@ -219,6 +185,32 @@ public class BacklogFragment extends Fragment {
             }
             else {
                 showHideAddButton.show();
+            }
+        }
+
+        @Override
+        public void onDraggedOutsideBounds(int position, boolean down) {
+            if (!down) {
+                dataModelController.moveItemFromBacklogToInProgress(position);
+            }
+        }
+    }
+
+    private class InProgressDragSortControllerListener implements DragSortControllerListener {
+
+        @Override
+        public void onDragStarted() {}
+
+        @Override
+        public void onDragFinished() {}
+
+        @Override
+        public void onScrollWithoutDragging(boolean down) {}
+
+        @Override
+        public void onDraggedOutsideBounds(int position, boolean down) {
+            if (down) {
+                dataModelController.moveItemFromInProgressToBacklog(position);
             }
         }
     }
