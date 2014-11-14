@@ -5,7 +5,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <EditText
+    <nz.co.lazycoder.personalbacklog.view.widget.EditTextWithActiveKeyboard
         android:id="@+id/title_input_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/clickable_icon_small_size"/>

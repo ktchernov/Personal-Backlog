@@ -15,13 +15,13 @@ import java.io.File;
 import java.io.IOException;
 
 import nz.co.lazycoder.personalbacklog.R;
-import nz.co.lazycoder.personalbacklog.addItemDialog.AddItemDialog;
+import nz.co.lazycoder.personalbacklog.view.addItemDialog.AddItemDialog;
 import nz.co.lazycoder.personalbacklog.io.AsyncSaveQueuer;
 import nz.co.lazycoder.personalbacklog.io.FileStringSaver;
 import nz.co.lazycoder.personalbacklog.io.SaveQueuer;
 import nz.co.lazycoder.personalbacklog.model.DataModelController;
-import nz.co.lazycoder.personalbacklog.model.ListItem;
-import nz.co.lazycoder.personalbacklog.model.ListItemsEditor;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItem;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItemsEditor;
 
 import static nz.co.lazycoder.personalbacklog.view.OutsideBoundsDragSortController.DragSortControllerListener;
 
@@ -85,13 +85,21 @@ public class BacklogFragment extends Fragment {
     }
 
     private void setupModelsAndListeners() {
-        ItemListAdapter backlogListAdapter = new BacklogListAdapter(dataModelController);
+        final ItemListAdapter backlogListAdapter = new BacklogListAdapter(dataModelController);
         backlogView.setAdapter(backlogListAdapter);
 
         backlogListAdapter.setOptionsMenu(R.menu.item_popup_menu, new ItemListAdapter.OnMenuItemClickListener() {
             @Override
             public void onMenuItemClick(int listItemPosition, int menuItemId) {
-                dataModelController.getBacklogEditor().remove(listItemPosition);
+                switch(menuItemId) {
+                    case R.id.menu_delete:
+                        dataModelController.getBacklogEditor().remove(listItemPosition);
+                        break;
+                    case R.id.menu_edit:
+//                        backlogView.setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
+                        dataModelController.getBacklogEditor().edit(listItemPosition);
+                        break;
+                }
             }
         });
 

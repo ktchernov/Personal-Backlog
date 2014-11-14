@@ -6,6 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import nz.co.lazycoder.personalbacklog.io.SaveQueuer;
+import nz.co.lazycoder.personalbacklog.model.listitems.EditableListItem;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItem;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItems;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItemsEditor;
+import nz.co.lazycoder.personalbacklog.model.listitems.MutableListItems;
 
 /**
  * Created by ktchernov on 24/08/2014.
@@ -68,11 +73,13 @@ public class DataModelController {
     }
 
     public void setInProgressListener(ListListener listener) {
-        inProgressEditor.listListener = listener;
+        // TODO: eew cast
+        ((ControllerListEditor) getInProgressEditor()).listListener = listener;
     }
 
     public void setBacklogListener(ListListener listener) {
-        backlogEditor.listListener = listener;
+        // TODO: eew cast
+        ((ControllerListEditor) getBacklogEditor()).listListener = listener;
     }
 
     public ListItems getInProgressItemList() {
@@ -86,29 +93,23 @@ public class DataModelController {
     public void moveItemFromBacklogToInProgress(int backlogPosition) {
         dataModel.inProgressItemList.add(dataModel.backlogItemList.remove(backlogPosition));
 
-        notifyInProgressChanged();
-        notifyBacklogChanged();
+        notifyBothListenersAndQueueSave();
+    }
+
+    private void notifyBothListenersAndQueueSave() {
+        if (inProgressEditor.listListener != null)
+            inProgressEditor.listListener .onListChanged();
+        if (backlogEditor.listListener != null)
+            backlogEditor.listListener.onListChanged();
+
+
+        queueSave();
     }
 
     public void moveItemFromInProgressToBacklog(int inProgressPosition) {
         dataModel.backlogItemList.add(dataModel.inProgressItemList.remove(inProgressPosition));
 
-        notifyInProgressChanged();
-        notifyBacklogChanged();
-    }
-
-    private void notifyInProgressChanged() {
-        if (inProgressEditor.listListener != null)
-            inProgressEditor.listListener .onListChanged();
-
-        queueSave();
-    }
-
-    private void notifyBacklogChanged() {
-        if (backlogEditor.listListener != null)
-            backlogEditor.listListener.onListChanged();
-
-        queueSave();
+        notifyBothListenersAndQueueSave();
     }
 
     private void queueSave() {
@@ -132,13 +133,6 @@ public class DataModelController {
         }
 
         @Override
-        public ListItem removeSelected() {
-            ListItem listItem = list.removeSelected();
-            notifyListenerAndQueueSave(true);
-            return listItem;
-        }
-
-        @Override
         public void move(int from, int to) {
             list.add(to, list.remove(from));
             notifyListenerAndQueueSave(true);
@@ -157,8 +151,21 @@ public class DataModelController {
         }
 
         @Override
-        public void select(int position) {
-            list.select(position);
+        public EditableListItem edit(int position) {
+            EditableListItem editableListItem = list.edit(position);
+            notifyListenerAndQueueSave(false);
+            return editableListItem;
+        }
+
+        @Override
+        public void acceptEdit() {
+            list.acceptEdit();
+            notifyListenerAndQueueSave(true);
+        }
+
+        @Override
+        public void rejectEdit() {
+            list.rejectEdit();
             notifyListenerAndQueueSave(false);
         }
 

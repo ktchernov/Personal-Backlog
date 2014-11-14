@@ -2,7 +2,11 @@ package nz.co.lazycoder.personalbacklog.model;
 
 import android.test.InstrumentationTestCase;
 
+import org.mockito.Mockito;
+
 import nz.co.lazycoder.personalbacklog.io.SaveQueuer;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItem;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItemsEditor;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;
@@ -74,8 +78,8 @@ public class DataModelControllerTest extends InstrumentationTestCase {
         assertEquals(0, dataModelController.getInProgressItemList().size());
     }
 
-    private void verifyAtLeastOneSaveQueued() {
-        verify(saveQueuer, atLeast(1)).queueSave(anyString(), any(SaveQueuer.SaveListener.class));
+    private void verifyOneSaveQueued() {
+        verify(saveQueuer).queueSave(anyString(), any(SaveQueuer.SaveListener.class));
     }
 
     private void verifyNoSavesQueued() {
@@ -92,29 +96,29 @@ public class DataModelControllerTest extends InstrumentationTestCase {
         assertNoInProgressListenerNotification();
         assertNoInProgressItems();
 
-        verifyAtLeastOneSaveQueued();
+        verifyOneSaveQueued();
     }
 
     public void testDataModelRemoveBacklogItem() {
-        addTestItem();
+        addTestBacklogItemWithoutNotifications();
 
         dataModelController.getBacklogEditor().remove(0);
 
-        assertBacklogListenerNotifications(2);
+        assertBacklogListenerNotifications(1);
         assertNoInProgressListenerNotification();
 
         assertNoBacklogItems();
         assertNoInProgressItems();
 
-        verifyAtLeastOneSaveQueued();
+        verifyOneSaveQueued();
     }
 
     public void testDataModelMoveValidItemFromBacklogToInProgress() {
-        addTestItem();
+        addTestBacklogItemWithoutNotifications();
 
         dataModelController.moveItemFromBacklogToInProgress(0);
 
-        assertBacklogListenerNotifications(2);
+        assertBacklogListenerNotifications(1);
         assertInProgressListenerNotifications(1);
 
         assertEquals(1, dataModelController.getInProgressItemList().size());
@@ -122,7 +126,7 @@ public class DataModelControllerTest extends InstrumentationTestCase {
 
         assertNoBacklogItems();
 
-        verifyAtLeastOneSaveQueued();
+        verifyOneSaveQueued();
     }
 
     public void testDataModelMoveInvalidItemFromBacklogToInProgressShouldFail() {
@@ -157,16 +161,6 @@ public class DataModelControllerTest extends InstrumentationTestCase {
         verifyNoSavesQueued();
     }
 
-
-    public void testSelectBacklogItemShouldSuccedAndNotifyListener() {
-        assertEquals(-1, dataModelController.getBacklogItemList().getSelectedItemIndex());
-        for (int i = -1; i <= 2; i++) {
-            backlogListEditor.select(i);
-            assertEquals(i, dataModelController.getBacklogItemList().getSelectedItemIndex());
-        }
-        verifyNoSavesQueued();
-    }
-
     public void testChangeBacklogListenerShouldTakeAffectForEditors() {
         DataModelController.ListListener newBacklogListener = mock(DataModelController.ListListener.class);
         dataModelController.setBacklogListener(newBacklogListener);
@@ -183,6 +177,35 @@ public class DataModelControllerTest extends InstrumentationTestCase {
 
         verify(inProgressListener, never()).onListChanged();
         verify(newInProgressListener).onListChanged();
+    }
+
+    public void testAcceptEditInBacklogListEditorShouldQueueSave() {
+        addTestBacklogItemWithoutNotifications();
+
+        dataModelController.getBacklogEditor().edit(0);
+        dataModelController.getBacklogEditor().acceptEdit();
+
+        assertBacklogListenerNotifications(2);
+
+        verifyOneSaveQueued();
+    }
+
+    public void testRejectEditInBacklogListEditorShouldQueueNoSaves() {
+        addTestBacklogItemWithoutNotifications();
+
+        dataModelController.getBacklogEditor().edit(0);
+        dataModelController.getBacklogEditor().rejectEdit();
+
+        assertBacklogListenerNotifications(2);
+
+        verifyNoSavesQueued();
+    }
+
+    private void addTestBacklogItemWithoutNotifications() {
+        addTestItem();
+
+        // clear notifications from test data setup
+        Mockito.reset(saveQueuer, backlogListener);
     }
 
 }

@@ -19,9 +19,10 @@
         <item name="android:divider">@null</item>
         <item name="android:dividerHeight">0dp</item>
         <item name="float_background_color">@android:color/transparent</item>
+        <item name="android:descendantFocusability">afterDescendants</item>
         <item name="float_alpha">0.9</item>
         <item name="use_default_controller">false</item>
-        <item name="parallax_enabled">true</item>
+        <item name="parallax_enabled">false</item>
     </style>
 
     <style name="PBLListTitle">
@@ -50,6 +51,16 @@
         <item name="android:minHeight">@dimen/row_height</item>
         <item name="android:background">@android:color/white</item>
         <item name="cardCornerRadius">@dimen/item_card_corner_radius</item>
+    </style>
+
+    <style name="ItemText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_centerVertical">true</item>
+        <item name="android:layout_toStartOf">@id/options_handle</item>
+        <item name="android:layout_toEndOf">@id/drag_handle</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textSize">@dimen/text_size_normal</item>
     </style>
 
 </resources>

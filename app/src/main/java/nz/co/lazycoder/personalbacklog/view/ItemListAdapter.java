@@ -5,18 +5,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import nz.co.lazycoder.personalbacklog.R;
-import nz.co.lazycoder.personalbacklog.model.ListItem;
-import nz.co.lazycoder.personalbacklog.model.ListItems;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItem;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItems;
 
 /**
 * Created by ktchernov on 16/08/2014.
 */
 public class ItemListAdapter extends BaseAdapter
 {
+
     public interface OnMenuItemClickListener {
         void onMenuItemClick(int listItemPosition, int menuItemId);
     }
@@ -64,15 +66,26 @@ public class ItemListAdapter extends BaseAdapter
 
         viewHolder.itemPosition = position;
 
-//        TODO: review removing this
-//        if (position == items.getSelectedItemIndex()) {
-//            recycleView.setBackgroundColor(parent.getResources().getColor(android.R.color.holo_blue_light));
-//        }
-//        else {
-//            recycleView.setBackgroundColor(Color.TRANSPARENT);
-//        }
-        ListItem listItem = items.getItem(position);
-        viewHolder.textView.setText(listItem.getTitle());
+        if (items.getEditItemPosition() == position) {
+
+            int oldVisibility = viewHolder.editText.getVisibility();
+            viewHolder.editText.setVisibility(View.VISIBLE);
+            viewHolder.editText.setText(items.getEditItem().getTitle());
+
+            if (oldVisibility != View.VISIBLE) {
+                viewHolder.editText.requestFocus();
+            }
+
+            viewHolder.textView.setVisibility(View.GONE);
+        }
+        else {
+            ListItem listItem = items.getItem(position);
+
+            viewHolder.editText.setVisibility(View.GONE);
+
+            viewHolder.textView.setVisibility(View.VISIBLE);
+            viewHolder.textView.setText(listItem.getTitle());
+        }
 
         return recycleView;
     }
@@ -85,12 +98,15 @@ public class ItemListAdapter extends BaseAdapter
     private class ViewHolder {
 
         public TextView textView;
+        public EditText editText;
         public View optionsHandle;
         public int itemPosition;
 
         public ViewHolder(final View itemView, final int itemPosition) {
             this.itemPosition = itemPosition;
             textView = (TextView) itemView.findViewById(R.id.backlog_text_view);
+            editText = (EditText) itemView.findViewById(R.id.backlog_edit_text);
+
             optionsHandle = itemView.findViewById(R.id.options_handle);
             optionsHandle.setTag(this);
 
