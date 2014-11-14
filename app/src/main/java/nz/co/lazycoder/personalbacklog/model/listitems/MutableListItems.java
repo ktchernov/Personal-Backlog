@@ -1,4 +1,4 @@
-package nz.co.lazycoder.personalbacklog.model;
+package nz.co.lazycoder.personalbacklog.model.listitems;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonDeserializationContext;
@@ -10,6 +10,7 @@ import com.google.gson.JsonSerializer;
 
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,17 +18,52 @@ import java.util.List;
  * Created by ktchernov on 5/10/2014.
  */
 public class MutableListItems implements ListItems, ListItemsEditor {
+    public static final int INVALID_ITEM = -1;
     private final List<ListItem> wrappedList;
 
-    private int selectedItemIndex = -1;
+    private int editItemPosition = INVALID_ITEM;
+    private EditableListItem editItem;
 
     public MutableListItems() {
         this.wrappedList = new LinkedList<ListItem>();
     }
 
+    public MutableListItems(Collection<ListItem> itemCollection) {
+        this.wrappedList = new LinkedList<ListItem>(itemCollection);
+    }
+
     @Override
     public ListItem getItem(int position) {
         return wrappedList.get(position);
+    }
+
+    @Override
+    public int getEditItemPosition() {
+        return editItemPosition;
+    }
+
+    @Override
+    public EditableListItem getEditItem() {
+        if (editItem == null && editItemPosition != INVALID_ITEM) {
+            editItem = new EditableListItem(getItem(editItemPosition));
+        }
+        return editItem;
+    }
+
+    @Override
+    public void acceptEdit() {
+        wrappedList.set(editItemPosition, new ListItem(editItem));
+        stopEditing();
+    }
+
+    @Override
+    public void rejectEdit() {
+        stopEditing();
+    }
+
+    private void stopEditing() {
+        editItemPosition = -1;
+        editItem = null;
     }
 
     @Override
@@ -38,11 +74,6 @@ public class MutableListItems implements ListItems, ListItemsEditor {
     @Override
     public ListItem remove(int position) {
         return wrappedList.remove(position);
-    }
-
-    @Override
-    public ListItem removeSelected() {
-        return wrappedList.remove(selectedItemIndex);
     }
 
     @Override
@@ -61,13 +92,12 @@ public class MutableListItems implements ListItems, ListItemsEditor {
     }
 
     @Override
-    public void select(int position) {
-        this.selectedItemIndex = position;
-    }
-
-    @Override
-    public int getSelectedItemIndex() {
-        return selectedItemIndex;
+    public EditableListItem edit(int position) {
+        if (position < 0 || position >= wrappedList.size()) {
+            throw new IndexOutOfBoundsException(position + " is out of bounds");
+        }
+        editItemPosition = position;
+        return getEditItem();
     }
 
     @Override
@@ -77,12 +107,11 @@ public class MutableListItems implements ListItems, ListItemsEditor {
         }
         MutableListItems otherMutableListItems = (MutableListItems)other;
 
-        return otherMutableListItems.selectedItemIndex == this.selectedItemIndex &&
-               otherMutableListItems.wrappedList.equals(this.wrappedList);
+        return otherMutableListItems.wrappedList.equals(this.wrappedList);
     }
 
 
-    static class MutableListItemsJsonSerializer implements JsonSerializer<MutableListItems>, JsonDeserializer<MutableListItems> {
+    public static class MutableListItemsJsonSerializer implements JsonSerializer<MutableListItems>, JsonDeserializer<MutableListItems> {
         private static Gson gson = new Gson();
 
         @Override

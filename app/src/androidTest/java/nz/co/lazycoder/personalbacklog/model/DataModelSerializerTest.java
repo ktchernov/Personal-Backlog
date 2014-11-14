@@ -6,6 +6,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItem;
+
 /**
  * Created by ktchernov on 30/08/2014.
  */

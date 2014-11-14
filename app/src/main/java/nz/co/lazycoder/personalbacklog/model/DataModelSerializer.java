@@ -3,6 +3,8 @@ package nz.co.lazycoder.personalbacklog.model;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import nz.co.lazycoder.personalbacklog.model.listitems.MutableListItems;
+
 /**
  * Created by ktchernov on 5/10/2014.
  */

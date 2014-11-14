@@ -1,5 +1,7 @@
 package nz.co.lazycoder.personalbacklog.model;
 
+import nz.co.lazycoder.personalbacklog.model.listitems.MutableListItems;
+
 /**
  * Created by ktchernov on 30/08/2014.
  */

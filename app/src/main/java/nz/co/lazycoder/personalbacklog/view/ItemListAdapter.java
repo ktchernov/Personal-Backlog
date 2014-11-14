@@ -9,12 +9,9 @@ import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import nz.co.lazycoder.personalbacklog.R;
-import nz.co.lazycoder.personalbacklog.model.ListItem;
-import nz.co.lazycoder.personalbacklog.model.ListItems;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItem;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItems;
 
-/**
-* Created by ktchernov on 16/08/2014.
-*/
 public class ItemListAdapter extends BaseAdapter
 {
     public interface OnMenuItemClickListener {
@@ -64,13 +61,6 @@ public class ItemListAdapter extends BaseAdapter
 
         viewHolder.itemPosition = position;
 
-//        TODO: review removing this
-//        if (position == items.getSelectedItemIndex()) {
-//            recycleView.setBackgroundColor(parent.getResources().getColor(android.R.color.holo_blue_light));
-//        }
-//        else {
-//            recycleView.setBackgroundColor(Color.TRANSPARENT);
-//        }
         ListItem listItem = items.getItem(position);
         viewHolder.textView.setText(listItem.getTitle());
 

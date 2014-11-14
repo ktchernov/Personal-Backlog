@@ -1,4 +1,4 @@
-package nz.co.lazycoder.personalbacklog.addItemDialog;
+package nz.co.lazycoder.personalbacklog.view.addItemDialog;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -10,11 +10,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import nz.co.lazycoder.personalbacklog.R;
-import nz.co.lazycoder.personalbacklog.model.ListItem;
+import nz.co.lazycoder.personalbacklog.model.listitems.ListItem;
 
-/**
- * Created by ktchernov on 17/08/2014.
- */
 public class AddItemDialog {
     private final AlertDialog alertDialog;
 
@@ -35,13 +32,10 @@ public class AddItemDialog {
     private class AlertDialogImpl extends AlertDialog {
         private boolean keyboardVisible;
 
-        private final OnItemCreatedListener onItemCreatedListener;
-
         private final EditText titleInputView;
 
         public AlertDialogImpl(final Context context, final OnItemCreatedListener onItemCreatedListener) {
             super(context);
-            this.onItemCreatedListener = onItemCreatedListener;
 
             setTitle(R.string.add_item_dialog_title);
 

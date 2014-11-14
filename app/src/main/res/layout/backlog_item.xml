@@ -1,39 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/PBLItem"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    style="@style/PBLItem">
+    android:layout_height="match_parent">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-        <ImageView
-            android:id="@+id/drag_handle"
-            style="@style/PBLSmallClickableIcon"
-            android:contentDescription="@string/accessibility_drag"
-            android:src="@drawable/ic_action_drag_up_down" />
+    <ImageView
+        android:id="@+id/drag_handle"
+        style="@style/PBLSmallClickableIcon"
+        android:contentDescription="@string/accessibility_drag"
+        android:src="@drawable/ic_action_drag_up_down" />
 
-        <TextView
-            android:id="@+id/backlog_text_view"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/options_handle"
-            android:layout_toEndOf="@id/drag_handle"
-            android:gravity="center_vertical"
-            android:text="@string/sample_backlog_item_text"
-            android:textSize="@dimen/text_size_normal" />
+    <TextView
+        android:id="@+id/backlog_text_view"
+        tools:text="@string/sample_backlog_item_text"
+        style="@style/ItemText" />
 
+    <ImageView
+        android:id="@+id/options_handle"
+        style="@style/PBLSmallClickableIcon"
+        android:layout_alignParentEnd="true"
+        android:contentDescription="@string/accessibility_item_options"
+        android:src="@drawable/ic_action_overflow" />
 
-        <ImageView
-            android:id="@id/options_handle"
-            style="@style/PBLSmallClickableIcon"
-            android:layout_alignParentEnd="true"
-            android:contentDescription="@string/accessibility_item_options"
-            android:src="@drawable/ic_action_overflow" />
-
-    </RelativeLayout>
+</RelativeLayout>
 
 </android.support.v7.widget.CardView>
