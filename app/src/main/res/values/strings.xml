@@ -14,4 +14,7 @@
     <string name="accessibility_drag">Drag handle - up or down</string>
     <string name="accessibility_item_options">Item options</string>
     <string name="edit">Edit</string>
+
+    <string name="edit_item_dialog_title">Edit item</string>
+    <string name="edit_item_title_hint">Enter item title</string>
 </resources>

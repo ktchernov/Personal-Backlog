@@ -63,4 +63,14 @@
         <item name="android:textSize">@dimen/text_size_normal</item>
     </style>
 
+    <style name="EditItemStyle">
+        <item name="android:inputType">textAutoCorrect</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/clickable_icon_small_size</item>
+        <item name="android:layout_marginLeft">@dimen/standard_horizontal_padding</item>
+        <item name="android:layout_marginRight">@dimen/standard_horizontal_padding</item>
+        <item name="android:layout_marginBottom">@dimen/standard_vertical_padding</item>
+        <item name="android:layout_marginTop">@dimen/standard_vertical_padding</item>
+    </style>
+
 </resources>

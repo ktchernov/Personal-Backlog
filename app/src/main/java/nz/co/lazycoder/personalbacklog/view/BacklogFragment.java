@@ -2,6 +2,7 @@ package nz.co.lazycoder.personalbacklog.view;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,11 +20,14 @@ import nz.co.lazycoder.personalbacklog.io.AsyncSaveQueuer;
 import nz.co.lazycoder.personalbacklog.io.FileStringSaver;
 import nz.co.lazycoder.personalbacklog.io.SaveQueuer;
 import nz.co.lazycoder.personalbacklog.model.DataModelController;
+import nz.co.lazycoder.personalbacklog.model.listitems.EditableListItem;
 import nz.co.lazycoder.personalbacklog.model.listitems.ListItem;
 import nz.co.lazycoder.personalbacklog.model.listitems.ListItemsEditor;
-import nz.co.lazycoder.personalbacklog.view.addItemDialog.AddItemDialog;
+import nz.co.lazycoder.personalbacklog.view.itemDialog.ItemDialogFactory;
 
 import static nz.co.lazycoder.personalbacklog.view.OutsideBoundsDragSortController.DragSortControllerListener;
+import static nz.co.lazycoder.personalbacklog.view.itemDialog.ItemDialogFactory.AddItemListener;
+import static nz.co.lazycoder.personalbacklog.view.itemDialog.ItemDialogFactory.EditItemListener;
 
 public class BacklogFragment extends Fragment {
 
@@ -69,7 +73,7 @@ public class BacklogFragment extends Fragment {
         View fragmentView = inflater.inflate(R.layout.fragment_personal_backlog, container, false);
 
         View addButtonView = fragmentView.findViewById(R.id.add_row);
-        addButtonView.setOnClickListener(new AddItemOnClickListener());
+        addButtonView.setOnClickListener(new AddItemToBacklogOnClickListener());
 
         showHideAddButton = new ShowHideFloatingActionButton(addButtonView);
 
@@ -88,29 +92,15 @@ public class BacklogFragment extends Fragment {
         final ItemListAdapter backlogListAdapter = new BacklogListAdapter(dataModelController);
         backlogView.setAdapter(backlogListAdapter);
 
-        backlogListAdapter.setOptionsMenu(R.menu.item_popup_menu, new ItemListAdapter.OnMenuItemClickListener() {
-            @Override
-            public void onMenuItemClick(int listItemPosition, int menuItemId) {
-                switch(menuItemId) {
-                    case R.id.menu_delete:
-                        dataModelController.getBacklogEditor().remove(listItemPosition);
-                        break;
-                    case R.id.menu_edit:
-                        dataModelController.getBacklogEditor().edit(listItemPosition);
-                        break;
-                }
-            }
-        });
+        Context context = getActivity();
+        backlogListAdapter.setOptionsMenu(R.menu.item_popup_menu,
+                new OnMenuItemClickListener(context, dataModelController.getBacklogEditor()));
 
         ItemListAdapter inProgressListAdapter = new InProgressListAdapter(dataModelController);
         inProgressView.setAdapter(inProgressListAdapter);
 
-        inProgressListAdapter.setOptionsMenu(R.menu.item_popup_menu, new ItemListAdapter.OnMenuItemClickListener() {
-            @Override
-            public void onMenuItemClick(int listItemPosition, int menuItemId) {
-                dataModelController.getInProgressEditor().remove(listItemPosition);
-            }
-        });
+        inProgressListAdapter.setOptionsMenu(R.menu.item_popup_menu,
+                new OnMenuItemClickListener(context, dataModelController.getInProgressEditor()));
     }
 
     private void setupDragListView(DragSortListView dragSortListView, ListItemsEditor editor,
@@ -126,23 +116,6 @@ public class BacklogFragment extends Fragment {
 
         dragSortListView.setFloatViewManager(dragSortController);
         dragSortListView.setOnTouchListener(dragSortController);
-    }
-
-    private class AddItemOnClickListener implements View.OnClickListener {
-
-        @Override
-        public void onClick(View view) {
-            AddItemDialog addItemDialog = new AddItemDialog(
-                    getActivity(),
-                    new AddItemDialog.OnItemCreatedListener() {
-                        @Override
-                        public void onItemCreated(ListItem item) {
-                            dataModelController.getBacklogEditor().add(item);
-                        }
-                    });
-            addItemDialog.show();
-        }
-
     }
 
     private static class ListDropListener implements DragSortListView.DropListener {
@@ -219,6 +192,60 @@ public class BacklogFragment extends Fragment {
             if (down) {
                 dataModelController.moveItemFromInProgressToBacklog(position);
             }
+        }
+    }
+
+    private class AddItemToBacklogOnClickListener implements View.OnClickListener {
+
+        @Override
+        public void onClick(View view) {
+            ItemDialogFactory.showAddItemDialog(
+                    getActivity(),
+                    new AddItemListener() {
+                        @Override
+                        public void onItemAdded(ListItem newListItem) {
+                            dataModelController.getBacklogEditor().add(newListItem);
+                        }
+                    });
+        }
+
+    }
+
+    private static class OnMenuItemClickListener implements ItemListAdapter.OnMenuItemClickListener {
+
+        private final Context context;
+        private final ListItemsEditor editor;
+
+        OnMenuItemClickListener (Context context, ListItemsEditor editor) {
+            this.context = context;
+            this.editor = editor;
+        }
+
+        @Override
+        public void onMenuItemClick(int listItemPosition, int menuItemId) {
+            switch(menuItemId) {
+                case R.id.menu_delete:
+                    editor.remove(listItemPosition);
+                    break;
+                case R.id.menu_edit:
+                    showEditDialog(editor, listItemPosition);
+                    break;
+            }
+        }
+
+        private void showEditDialog(final ListItemsEditor editor, int listItemPosition) {
+            EditableListItem item = editor.edit(listItemPosition);
+            ItemDialogFactory.showEditItemDialog(context, item, new EditItemListener() {
+                @Override
+                public void onPositiveAction() {
+                    editor.acceptEdit();
+                }
+
+                @Override
+                public void onNegativeAction() {
+                    editor.rejectEdit();
+                }
+            });
         }
     }
 }

@@ -7,7 +7,7 @@
 
     <EditText
         android:id="@+id/title_input_view"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/clickable_icon_small_size"/>
+        android:hint="@string/edit_item_title_hint"
+        style="@style/EditItemStyle"/>
 
 </LinearLayout>
