@@ -102,7 +102,6 @@ public class DataModelController {
         if (backlogEditor.listListener != null)
             backlogEditor.listListener.onListChanged();
 
-
         queueSave();
     }
 
