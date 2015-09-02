@@ -1,6 +1,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
+    xmlns:dslv="http://schemas.android.com/library/res/com.mobeta.android.dslv"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -29,6 +30,7 @@
                 style="@style/PBLListView"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
+                dslv:drag_outside_bounds_down_enabled="true"
                 tools:listitem="@layout/backlog_item" />
 
             <View style="@style/SectionDivider"
@@ -55,6 +57,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_alignParentBottom="true"
+                dslv:drag_outside_bounds_up_enabled="true"
                 tools:listitem="@layout/backlog_item" />
         </RelativeLayout>
     </LinearLayout>
