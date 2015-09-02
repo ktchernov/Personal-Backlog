@@ -22,7 +22,6 @@
         <item name="android:descendantFocusability">afterDescendants</item>
         <item name="float_alpha">0.9</item>
         <item name="use_default_controller">false</item>
-        <item name="parallax_enabled">true</item>
     </style>
 
     <style name="PBLListTitle">
