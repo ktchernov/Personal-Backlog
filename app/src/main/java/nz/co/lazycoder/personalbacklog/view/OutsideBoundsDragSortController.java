@@ -10,8 +10,10 @@ import com.mobeta.android.dslv.DragSortController;
 import com.mobeta.android.dslv.DragSortListView;
 
 /**
-* Created by ktchernov on 26/10/2014.
-*/
+ * Drag sort controller that lets you drag an item outside the bounds of the list view - which will trigger a sepcial event.
+ *
+ * Created by ktchernov on 26/10/2014.
+ */
 class OutsideBoundsDragSortController extends DragSortController {
     public static final int REMOVE_DELAY_MILLIS = 500;
     public static final int SCROLL_TIMEOUT_MILLIS = 500;
@@ -25,10 +27,10 @@ class OutsideBoundsDragSortController extends DragSortController {
     private DragSortControllerListener dragSortControllerListener;
 
     public interface DragSortControllerListener {
-        public void onDragStarted();
-        public void onDragFinished();
-        public void onScrollWithoutDragging(boolean down);
-        public void onDraggedOutsideBounds(int position, boolean down);
+        void onDragStarted();
+        void onDragFinished();
+        void onScrollWithoutDragging(boolean down);
+        void onDraggedOutsideBounds(int position, boolean down);
 
     }
 
@@ -46,8 +48,9 @@ class OutsideBoundsDragSortController extends DragSortController {
     public View onCreateFloatView(int dragPosition) {
         this.dragPosition = dragPosition;
 
-        if (dragSortControllerListener != null)
+        if (dragSortControllerListener != null) {
             dragSortControllerListener.onDragStarted();
+        }
 
         return super.onCreateFloatView(dragPosition);
     }

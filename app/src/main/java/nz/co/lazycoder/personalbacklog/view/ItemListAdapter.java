@@ -46,17 +46,17 @@ public class ItemListAdapter extends BaseAdapter
     }
 
     @Override
-    public View getView(final int position, View recycleView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         final ViewHolder viewHolder;
-        if (recycleView == null) {
+        if (convertView == null) {
             final View cellView = LayoutInflater.from(parent.getContext()).inflate(R.layout.backlog_item, parent, false);
             viewHolder = new ViewHolder(cellView, position);
             cellView.setTag(viewHolder);
 
-            recycleView = cellView;
+            convertView = cellView;
         }
         else {
-            viewHolder = (ViewHolder) recycleView.getTag();
+            viewHolder = (ViewHolder) convertView.getTag();
         }
 
         viewHolder.itemPosition = position;
@@ -64,7 +64,7 @@ public class ItemListAdapter extends BaseAdapter
         ListItem listItem = items.getItem(position);
         viewHolder.textView.setText(listItem.getTitle());
 
-        return recycleView;
+        return convertView;
     }
 
     public void setOptionsMenu(int menuResourceId, OnMenuItemClickListener menuItemClickListener) {
