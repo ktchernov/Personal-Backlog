@@ -15,6 +15,8 @@ import com.mobeta.android.dslv.DragSortListView;
 import java.io.File;
 import java.io.IOException;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
 import nz.co.lazycoder.personalbacklog.R;
 import nz.co.lazycoder.personalbacklog.io.AsyncSaveQueuer;
 import nz.co.lazycoder.personalbacklog.io.FileStringSaver;
@@ -35,8 +37,10 @@ public class BacklogFragment extends Fragment {
 
     private DataModelController dataModelController;
 
-    private DragSortListView inProgressView;
-    private DragSortListView backlogView;
+    @Bind(R.id.in_progress_list_view) DragSortListView inProgressView;
+    @Bind(R.id.backlog_list_view) DragSortListView backlogView;
+    @Bind(R.id.add_fab) View addButtonView;
+
     private ShowHideFloatingActionButton showHideAddButton;
 
 
@@ -68,11 +72,10 @@ public class BacklogFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
         View fragmentView = inflater.inflate(R.layout.fragment_personal_backlog, container, false);
 
-        View addButtonView = fragmentView.findViewById(R.id.add_row);
+        ButterKnife.bind(this, fragmentView);
+
         addButtonView.setOnClickListener(new AddItemToBacklogOnClickListener());
 
         showHideAddButton = new ShowHideFloatingActionButton(addButtonView);
@@ -80,7 +83,6 @@ public class BacklogFragment extends Fragment {
         backlogView = (DragSortListView) fragmentView.findViewById(R.id.backlog_list_view);
         setupDragListView(backlogView, dataModelController.getBacklogEditor(), new BacklogDragSortControllerListener());
 
-        inProgressView = (DragSortListView) fragmentView.findViewById(R.id.in_progress_list_view);
         setupDragListView(inProgressView, dataModelController.getInProgressEditor(), new InProgressDragSortControllerListener());
 
         setupModelsAndListeners();
@@ -162,8 +164,7 @@ public class BacklogFragment extends Fragment {
         public void onScrollWithoutDragging(boolean down) {
             if (down) {
                 showHideAddButton.hide();
-            }
-            else {
+            } else {
                 showHideAddButton.show();
             }
         }

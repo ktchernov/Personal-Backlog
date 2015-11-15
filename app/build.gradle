@@ -22,10 +22,16 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.google.code.gson:gson:2.4'
-    compile 'com.android.support:appcompat-v7:23.1.1'
-    compile 'com.android.support:cardview-v7:23.1.1'
-    compile 'com.shamanland:fab:0.0.5'
+    compile 'com.shamanland:fab:0.0.8'
+
+    String supportLibraryVersion = '23.1.1'
+    compile "com.android.support:appcompat-v7:${supportLibraryVersion}"
+    compile "com.android.support:design:${supportLibraryVersion}"
+    compile "com.android.support:cardview-v7:${supportLibraryVersion}"
+
+    compile 'com.jakewharton:butterknife:7.0.1'
     compile 'com.github.ktchernov:drag-sort-listview:0.7.0'
+
     androidTestCompile  'org.mockito:mockito-core:1.9.5'
     androidTestCompile 'com.google.dexmaker:dexmaker:1.0'
     androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.0'

@@ -1,13 +1,12 @@
 package nz.co.lazycoder.personalbacklog.view;
 
-import android.app.Activity;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 
 import nz.co.lazycoder.personalbacklog.R;
 
 
-public class PersonalBacklogActivity extends ActionBarActivity {
+public class PersonalBacklogActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
